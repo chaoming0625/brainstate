@@ -1,0 +1,6 @@
+-r requirements.txt
+brainpy
+
+# test requirements
+pytest
+absl-py

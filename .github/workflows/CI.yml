@@ -1,0 +1,113 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - '**'        # matches every branch
+  pull_request:
+    branches:
+      - '**'        # matches every branch
+
+
+permissions:
+  contents: read  # to fetch code
+  actions: write  # to cancel previous workflows
+
+# This is what will cancel the workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  test_linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v4
+      - name: Print concurrency group
+        run: echo '${{ github.workflow }}-${{ github.ref }}'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip cache purge
+          python -m pip install --upgrade pip setuptools   --no-cache-dir
+          python -m pip install -r requirements-dev.txt  --no-cache-dir
+          pip install .  --no-cache-dir
+      - name: Test with pytest
+        run: |
+          pytest brainstate/
+
+
+  test_macos:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v4
+      - name: Print concurrency group
+        run: echo '${{ github.workflow }}-${{ github.ref }}'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip cache purge
+          python -m pip install --upgrade pip setuptools  --no-cache-dir
+          python -m pip install -r requirements-dev.txt  --no-cache-dir
+          pip install .  --no-cache-dir
+      - name: Test with pytest
+        run: |
+          pytest brainstate/
+
+
+  test_windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.9", "3.10", "3.11", "3.12" ]
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v4
+      - name: Print concurrency group
+        run: echo '${{ github.workflow }}-${{ github.ref }}'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip cache purge
+          python -m pip install --upgrade pip setuptools  --no-cache-dir
+          python -m pip install -r requirements-dev.txt  --no-cache-dir
+          pip install .  --no-cache-dir
+      - name: Test with pytest
+        run: |
+          pytest brainstate/ -p no:faulthandler
