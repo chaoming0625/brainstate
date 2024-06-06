@@ -39,15 +39,17 @@ with io.open(os.path.join(here, 'README.md'), 'r', encoding='utf-8') as f:
   README = f.read()
 
 # installation packages
-packages = find_packages(exclude=["docs*", "tests*", "examples*", "experiments*", "build*",
-                                  "dist*", "brainstate.egg-info*", "brainstate/__pycache__*",
-                                  "brainstate/__init__.py"])
+packages = find_packages(
+  exclude=["docs*", "tests*", "examples*", "experiments*", "build*",
+           "dist*", "brainstate.egg-info*", "brainstate/__pycache__*",
+           "brainstate/__init__.py"]
+)
 
 # setup
 setup(
   name='brainstate',
   version=version,
-  description='The Core System for General-purpose Brain Dynamics Programming Framework.',
+  description='A ``State``-based Transformation System for Brain Dynamics Programming.',
   long_description=README,
   long_description_content_type="text/markdown",
   author='BrainPy Team',

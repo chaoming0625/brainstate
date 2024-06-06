@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 exclude = ["docs*", "tests*", "examples*", "experiments*", "build*", "dist*",
-    "braincore.egg-info*", "braincore/__pycache__*",
-    "braincore/__init__.py"]
+    "brainstate.egg-info*", "brainstate/__pycache__*",
+    "brainstate/__init__.py"]
 
 
 [tool.distutils.bdist_wheel]
@@ -14,8 +14,8 @@ universal = true
 
 
 [project]
-name = "braincore"
-description = "The Core System for General-purpose Brain Dynamics Programming Framework."
+name = "brainstate"
+description = "A State-based Transformation System for Brain Dynamics Programming."
 readme = 'README.md'
 license = { text = 'Apache-2.0 license' }
 requires-python = '>=3.9'
@@ -51,11 +51,11 @@ dependencies = [
 dynamic = ['version']
 
 [tool.flit.module]
-name = "braincore"
+name = "brainstate"
 
 [project.urls]
 homepage = 'http://github.com/brainpy'
-repository = 'http://github.com/brainpy/braincore'
+repository = 'http://github.com/brainpy/brainstate'
 
 [project.optional-dependencies]
 testing = [
