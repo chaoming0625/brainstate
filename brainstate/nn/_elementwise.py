@@ -22,9 +22,8 @@ from typing import Optional
 import jax.numpy as jnp
 import jax.typing
 
-from . import functional as F
 from ._base import ElementWiseBlock
-from .. import math, environ, random
+from .. import math, environ, random, functional as F
 from .._module import Module
 from .._state import ParamState
 from ..mixin import Mode

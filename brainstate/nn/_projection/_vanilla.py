@@ -15,8 +15,8 @@
 
 from typing import Optional
 
-from brainstate._utils import set_module_as
 from brainstate._module import (Module, Projection, Dynamics, ReceiveInputProj)
+from brainstate._utils import set_module_as
 from brainstate.mixin import (BindCondData, Mode)
 from ._utils import is_instance
 

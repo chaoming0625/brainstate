@@ -23,9 +23,8 @@ from typing import Callable, Union, Sequence, Optional, Any
 import jax
 import jax.numpy as jnp
 
-from . import init
 from ._base import DnnLayer
-from .. import environ
+from .. import environ, init
 from .._state import LongTermState, ParamState
 from ..mixin import Mode
 from ..typing import DTypeLike, ArrayLike, Size, Axes

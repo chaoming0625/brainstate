@@ -21,9 +21,8 @@ from typing import Optional
 
 import jax.numpy as jnp
 
-from . import init
 from ._base import DnnLayer
-from .. import random, math, environ, typing
+from .. import random, math, environ, typing, init
 from ..mixin import Mode
 
 __all__ = [

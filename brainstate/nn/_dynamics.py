@@ -22,10 +22,9 @@ from typing import Callable, Optional
 import jax
 import jax.numpy as jnp
 
-from . import init, surrogate
 from ._base import ExplicitInOutSize
 from ._misc import exp_euler_step
-from .. import environ
+from .. import environ, init, surrogate
 from .._module import Dynamics
 from .._state import ShortTermState
 from ..mixin import DelayedInit, Mode, AlignPost

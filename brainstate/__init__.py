@@ -28,6 +28,9 @@ from . import random
 from . import transform
 from . import typing
 from . import util
+from . import surrogate
+from . import functional
+from . import init
 from ._module import *
 from ._module import __all__ as _module_all
 from ._state import *
@@ -35,6 +38,7 @@ from ._state import __all__ as _state_all
 
 __all__ = (
     ['environ', 'share', 'nn', 'optim', 'random',
+     'surrogate', 'functional', 'init',
      'mixin', 'math', 'transform', 'util', 'typing'] +
     _module_all + _state_all
 )

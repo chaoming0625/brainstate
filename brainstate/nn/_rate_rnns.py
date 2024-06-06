@@ -21,17 +21,16 @@ from typing import Callable, Union
 
 import jax.numpy as jnp
 
-from . import init, functional
 from ._base import ExplicitInOutSize
 from ._connections import Linear
-from .. import random
+from .. import random, init, functional
 from .._module import Module
 from .._state import ShortTermState, ParamState
 from ..mixin import DelayedInit, Mode
 from ..typing import ArrayLike
 
 __all__ = [
-  'ValinaRNNCell', 'GRUCell', 'MGUCell', 'LSTMCell', 'URLSTMCell',
+  'RNNCell', 'ValinaRNNCell', 'GRUCell', 'MGUCell', 'LSTMCell', 'URLSTMCell',
 ]
 
 

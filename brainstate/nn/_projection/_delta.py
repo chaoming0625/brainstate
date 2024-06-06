@@ -15,9 +15,9 @@
 
 from typing import Optional, Union
 
-from brainstate._utils import set_module_as
 from brainstate._module import (Module, Dynamics, Projection, ReceiveInputProj,
                                 UpdateReturn, register_delay_of_target)
+from brainstate._utils import set_module_as
 from brainstate.mixin import (Mode, BindCondData)
 from ._utils import is_instance
 

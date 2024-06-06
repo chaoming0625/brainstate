@@ -23,11 +23,10 @@ from typing import Callable
 import jax
 import jax.numpy as jnp
 
-from . import init, surrogate
 from ._base import DnnLayer
-from ._misc import exp_euler_step
 from ._dynamics import Neuron
-from .. import environ
+from ._misc import exp_euler_step
+from .. import environ, init, surrogate
 from .._state import ShortTermState, ParamState
 from ..mixin import Mode
 from ..typing import Size, ArrayLike, DTypeLike

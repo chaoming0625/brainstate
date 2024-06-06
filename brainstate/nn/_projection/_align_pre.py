@@ -16,10 +16,10 @@
 
 from typing import Optional, Union
 
-from brainstate._utils import set_module_as
 from brainstate._module import (Module, DelayAccess, Projection,
                                 ExtendedUpdateWithBA, ReceiveInputProj,
                                 register_delay_of_target)
+from brainstate._utils import set_module_as
 from brainstate.mixin import (DelayedInitializer, BindCondData, UpdateReturn, Mode, AllOfTypes)
 from ._utils import is_instance
 

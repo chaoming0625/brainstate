@@ -13,7 +13,6 @@
 # limitations under the License.
 # ==============================================================================
 
-from . import init, functional, surrogate
 from ._base import *
 from ._base import __all__ as base_all
 from ._connections import *
@@ -40,7 +39,6 @@ from ._synouts import *
 from ._synouts import __all__ as synouts_all
 
 __all__ = (
-    ['init', 'functional', 'surrogate'] +
     base_all +
     connections_all +
     dynamics_all +

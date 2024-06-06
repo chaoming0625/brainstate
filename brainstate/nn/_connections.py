@@ -24,9 +24,8 @@ from typing import Callable, Tuple, Union, Sequence, Optional, TypeVar
 import jax
 import jax.numpy as jnp
 
-from . import functional
-from . import init
 from ._base import DnnLayer
+from .. import init, functional
 from .._state import ParamState
 from ..mixin import Mode
 from ..typing import ArrayLike
