@@ -57,11 +57,11 @@ setup(
   packages=packages,
   python_requires='>=3.9',
   install_requires=['numpy>=1.15', 'jax', 'tqdm'],
-  url='https://github.com/brainpy/braincore',
+  url='https://github.com/brainpy/brainstate',
   project_urls={
-    "Bug Tracker": "https://github.com/brainpy/braincore/issues",
-    "Documentation": "https://braincore.readthedocs.io/",
-    "Source Code": "https://github.com/brainpy/braincore",
+    "Bug Tracker": "https://github.com/brainpy/brainstate/issues",
+    "Documentation": "https://brainstate.readthedocs.io/",
+    "Source Code": "https://github.com/brainpy/brainstate",
   },
   extras_require={
     'cpu': ['jaxlib', 'brainpylib'],
