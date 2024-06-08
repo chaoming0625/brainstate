@@ -18,7 +18,8 @@ from .util import MemScaling, IdMemScaling
 __all__ = [
   'set', 'context', 'get', 'all',
   'set_host_device_count', 'set_platform',
-  'get_host_device_count', 'get_platform', 'get_dt', 'get_mode', 'get_mem_scaling', 'get_precision',
+  'get_host_device_count', 'get_platform',
+  'get_dt', 'get_mode', 'get_mem_scaling', 'get_precision',
   'tolerance',
   'dftype', 'ditype', 'dutype', 'dctype',
 ]
