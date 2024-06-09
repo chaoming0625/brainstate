@@ -23,8 +23,8 @@ import jax
 from jax._src import sharding_impls
 from jax.lib import xla_client as xc
 
-from ._make_jaxpr import StatefulFunction, _ensure_index_tuple, _assign_state_values
 from brainstate._utils import set_module_as
+from ._make_jaxpr import StatefulFunction, _ensure_index_tuple, _assign_state_values
 
 __all__ = ['jit']
 
@@ -33,10 +33,13 @@ class JittedFunction(Callable):
   """
   A wrapped version of ``fun``, set up for just-in-time compilation.
   """
-  origin_fun: Callable   # the original function
+  origin_fun: Callable  # the original function
   stateful_fun: StatefulFunction  # the stateful function for extracting states
   jitted_fun: jax.stages.Wrapped  # the jitted function
-  clear_cache: Callable # clear the cache of the jitted function
+  clear_cache: Callable  # clear the cache of the jitted function
+
+  def __call__(self, *args, **kwargs):
+    pass
 
 
 def _get_jitted_fun(
@@ -85,12 +88,16 @@ def _get_jitted_fun(
     jit_fun.clear_cache()
 
   jitted_fun: JittedFunction
+
   # the original function
   jitted_fun.origin_fun = fun.fun
+
   # the stateful function for extracting states
   jitted_fun.stateful_fun = fun
+
   # the jitted function
   jitted_fun.jitted_fun = jit_fun
+
   # clear cache
   jitted_fun.clear_cache = clear_cache
 
@@ -99,18 +106,18 @@ def _get_jitted_fun(
 
 @set_module_as('brainstate.transform')
 def jit(
-  fun: Callable = None,
-  in_shardings=sharding_impls.UNSPECIFIED,
-  out_shardings=sharding_impls.UNSPECIFIED,
-  static_argnums: int | Sequence[int] | None = None,
-  donate_argnums: int | Sequence[int] | None = None,
-  donate_argnames: str | Iterable[str] | None = None,
-  keep_unused: bool = False,
-  device: xc.Device | None = None,
-  backend: str | None = None,
-  inline: bool = False,
-  abstracted_axes: Any | None = None,
-  **kwargs
+    fun: Callable = None,
+    in_shardings=sharding_impls.UNSPECIFIED,
+    out_shardings=sharding_impls.UNSPECIFIED,
+    static_argnums: int | Sequence[int] | None = None,
+    donate_argnums: int | Sequence[int] | None = None,
+    donate_argnames: str | Iterable[str] | None = None,
+    keep_unused: bool = False,
+    device: xc.Device | None = None,
+    backend: str | None = None,
+    inline: bool = False,
+    abstracted_axes: Any | None = None,
+    **kwargs
 ) -> Union[JittedFunction, Callable[[Callable], JittedFunction]]:
   """
   Sets up ``fun`` for just-in-time compilation with XLA.
@@ -228,12 +235,31 @@ def jit(
 
   if fun is None:
     def wrapper(fun_again: Callable) -> JittedFunction:
-      return _get_jitted_fun(fun_again, in_shardings, out_shardings, static_argnums,
-                             donate_argnums, donate_argnames, keep_unused,
-                             device, backend, inline, abstracted_axes, **kwargs)
+      return _get_jitted_fun(fun_again,
+                             in_shardings,
+                             out_shardings,
+                             static_argnums,
+                             donate_argnums,
+                             donate_argnames,
+                             keep_unused,
+                             device,
+                             backend,
+                             inline,
+                             abstracted_axes,
+                             **kwargs)
+
     return wrapper
 
   else:
-    return _get_jitted_fun(fun, in_shardings, out_shardings, static_argnums,
-                           donate_argnums, donate_argnames, keep_unused,
-                           device, backend, inline, abstracted_axes, **kwargs)
+    return _get_jitted_fun(fun,
+                           in_shardings,
+                           out_shardings,
+                           static_argnums,
+                           donate_argnums,
+                           donate_argnames,
+                           keep_unused,
+                           device,
+                           backend,
+                           inline,
+                           abstracted_axes,
+                           **kwargs)

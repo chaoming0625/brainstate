@@ -1,8 +1,8 @@
-``braincore.util`` module
-=========================
+``brainstate.util`` module
+==========================
 
-.. currentmodule:: braincore.util 
-.. automodule:: braincore.util 
+.. currentmodule:: brainstate.util 
+.. automodule:: brainstate.util 
 
 .. autosummary::
    :toctree: generated/

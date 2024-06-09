@@ -20,11 +20,14 @@ from typing import Optional
 import jax
 import jax.numpy as jnp
 
+from .._utils import set_module_as
+
 __all__ = [
   'weight_standardization',
 ]
 
 
+@set_module_as('brainstate.functional')
 def weight_standardization(
     w: jax.typing.ArrayLike,
     eps: float = 1e-4,

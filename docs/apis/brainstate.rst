@@ -1,8 +1,8 @@
-``braincore`` module
-====================
+``brainstate`` module
+=====================
 
-.. currentmodule:: braincore 
-.. automodule:: braincore 
+.. currentmodule:: brainstate 
+.. automodule:: brainstate 
 
 ``State`` System
 ----------------

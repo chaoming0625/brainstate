@@ -1,8 +1,8 @@
-``braincore.transform`` module
-==============================
+``brainstate.transform`` module
+===============================
 
-.. currentmodule:: braincore.transform 
-.. automodule:: braincore.transform 
+.. currentmodule:: brainstate.transform 
+.. automodule:: brainstate.transform 
 
 
 

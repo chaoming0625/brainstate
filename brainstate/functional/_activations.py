@@ -27,7 +27,7 @@ import jax.numpy as jnp
 from jax.scipy.special import logsumexp
 from jax.typing import ArrayLike
 
-from brainstate import math, random
+from .. import math, random
 
 __all__ = [
   "tanh",
