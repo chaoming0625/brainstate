@@ -1,8 +1,8 @@
-``braincore.random`` module
-===========================
+``brainstate.random`` module
+============================
 
-.. currentmodule:: braincore.random 
-.. automodule:: braincore.random 
+.. currentmodule:: brainstate.random 
+.. automodule:: brainstate.random 
 
 
 Random Number Generators

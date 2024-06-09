@@ -1,8 +1,8 @@
-``braincore.math`` module
-=========================
+``brainstate.math`` module
+==========================
 
-.. currentmodule:: braincore.math 
-.. automodule:: braincore.math 
+.. currentmodule:: brainstate.math 
+.. automodule:: brainstate.math 
 
 .. autosummary::
    :toctree: generated/
@@ -19,7 +19,7 @@
    as_numpy
    tree_zeros_like
    tree_ones_like
-   ein_reduce
-   ein_rearrange
-   ein_repeat
-   ein_shape
+   einreduce
+   einrearrange
+   einrepeat
+   einshape

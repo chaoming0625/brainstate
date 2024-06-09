@@ -1,8 +1,8 @@
-``braincore.mixin`` module
-==========================
+``brainstate.mixin`` module
+===========================
 
-.. currentmodule:: braincore.mixin 
-.. automodule:: braincore.mixin 
+.. currentmodule:: brainstate.mixin 
+.. automodule:: brainstate.mixin 
 
 .. autosummary::
    :toctree: generated/

@@ -1,8 +1,8 @@
-``braincore.surrogate`` module
-==============================
+``brainstate.surrogate`` module
+===============================
 
-.. currentmodule:: braincore.surrogate 
-.. automodule:: braincore.surrogate 
+.. currentmodule:: brainstate.surrogate 
+.. automodule:: brainstate.surrogate 
 
 
 Surrogate Gradient Functions
