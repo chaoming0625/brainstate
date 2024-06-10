@@ -21,6 +21,8 @@ from ._dynamics import *
 from ._dynamics import __all__ as dynamics_all
 from ._elementwise import *
 from ._elementwise import __all__ as elementwise_all
+from ._embedding import *
+from ._embedding import __all__ as embed_all
 from ._misc import *
 from ._misc import __all__ as _misc_all
 from ._normalizations import *
@@ -43,6 +45,7 @@ __all__ = (
     connections_all +
     dynamics_all +
     elementwise_all +
+    embed_all +
     normalizations_all +
     others_all +
     poolings_all +
@@ -58,6 +61,7 @@ del (
   connections_all,
   dynamics_all,
   elementwise_all,
+  embed_all,
   normalizations_all,
   others_all,
   poolings_all,

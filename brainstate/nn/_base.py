@@ -55,22 +55,24 @@ class ExplicitInOutSize(Mixin):
 
   @property
   def in_size(self) -> Tuple[int, ...]:
-    if self._in_size is None:
-      raise ValueError(f"The input shape is not set in this node: {self} ")
     return self._in_size
 
   @in_size.setter
-  def in_size(self, in_size: Sequence[int]):
+  def in_size(self, in_size: Sequence[int] | int):
+    if isinstance(in_size, int):
+      in_size = (in_size,)
+    assert isinstance(in_size, (tuple, list)), f"Invalid type of in_size: {type(in_size)}"
     self._in_size = tuple(in_size)
 
   @property
   def out_size(self) -> Tuple[int, ...]:
-    if self._out_size is None:
-      raise ValueError(f"The output shape is not set in this node: {self}")
     return self._out_size
 
   @out_size.setter
-  def out_size(self, out_size: Sequence[int]):
+  def out_size(self, out_size: Sequence[int] | int):
+    if isinstance(out_size, int):
+      out_size = (out_size,)
+    assert isinstance(out_size, (tuple, list)), f"Invalid type of out_size: {type(out_size)}"
     self._out_size = tuple(out_size)
 
 
@@ -152,7 +154,8 @@ class Sequential(Module, UpdateReturn, Container, ExplicitInOutSize):
     self.children = visible_module_dict(self.format_elements(object, first, *tuple_modules, **dict_modules))
 
     # the input and output shape
-    self.in_size = tuple(first.in_size)
+    if first.in_size is not None:
+      self.in_size = first.in_size
     self.out_size = tuple(in_size)
 
   def _format_module(self, module, in_size):
