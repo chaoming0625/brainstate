@@ -39,6 +39,17 @@ Synaptic Projections
    VanillaProj
 
 
+Embedding Layers
+-----------------
+
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+   :template: classtemplate.rst
+
+   Embedding
+
+
 Connection Layers
 -----------------
 

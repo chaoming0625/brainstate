@@ -59,6 +59,23 @@ _global_context_to_check_state_tree = [False]
 def check_state_value_tree() -> None:
   """
   The contex manager to check weather the tree structure of the state value keeps consistently.
+
+  Once a :py:class:`~.State` is created, the tree structure of the value is fixed. In default,
+  the tree structure of the value is not checked to avoid off the repeated evaluation.
+  If you want to check the tree structure of the value once the new value is assigned,
+  you can use this context manager.
+
+  Example::
+
+  ```python
+  state = brainstate.ShortTermState(jnp.zeros((2, 3)))
+  with check_state_value_tree():
+    state.value = jnp.zeros((2, 3))
+
+    # The following code will raise an error.
+    state.value = (jnp.zeros((2, 3)), jnp.zeros((2, 3)))
+  ```
+
   """
   try:
     _global_context_to_check_state_tree.append(True)

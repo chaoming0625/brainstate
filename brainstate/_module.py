@@ -92,7 +92,7 @@ __all__ = [
   'call_order',
 
   # state processing
-  'init_states', 'load_states', 'save_states', 'assign_state_values',
+  'init_states', 'reset_states', 'load_states', 'save_states', 'assign_state_values',
 ]
 
 
@@ -268,6 +268,12 @@ class Module(object):
   def init_state(self, *args, **kwargs):
     """
     State initialization function.
+    """
+    pass
+
+  def reset_state(self, *args, **kwargs):
+    """
+    State resetting function.
     """
     pass
 
@@ -1115,6 +1121,12 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
     fun = partial(self._f_to_init, length=self.max_length, batch_size=batch_size)
     self.history = State(jax.tree.map(fun, self.target_info))
 
+  def reset_state(self, batch_size: int = None, **kwargs):
+    if batch_size is not None:
+      assert self.mode.has(Batching), 'The mode should have Batching behavior when batch_size is not None.'
+    fun = partial(self._f_to_init, length=self.max_length, batch_size=batch_size)
+    self.history.value = jax.tree.map(fun, self.target_info)
+
   def register_entry(
       self,
       entry: str,
@@ -1344,7 +1356,7 @@ def call_order(level: int = 0):
 @set_module_as('brainstate')
 def init_states(target: Module, *args, **kwargs) -> Module:
   """
-  Reset states of all children nodes in the given target.
+  Initialize states of all children nodes in the given target.
 
   Args:
     target: The target Module.
@@ -1364,6 +1376,33 @@ def init_states(target: Module, *args, **kwargs) -> Module:
   # reset the node's states
   for node in sorted(nodes_with_order, key=lambda x: x.init_state.call_order):
     node.init_state(*args, **kwargs)
+
+  return target
+
+
+@set_module_as('brainstate')
+def reset_states(target: Module, *args, **kwargs) -> Module:
+  """
+  Reset states of all children nodes in the given target.
+
+  Args:
+    target: The target Module.
+
+  Returns:
+    The target Module.
+  """
+  nodes_with_order = []
+
+  # reset node whose `init_state` has no `call_order`
+  for node in list(target.nodes().values()):
+    if not hasattr(node.reset_state, 'call_order'):
+      node.reset_state(*args, **kwargs)
+    else:
+      nodes_with_order.append(node)
+
+  # reset the node's states
+  for node in sorted(nodes_with_order, key=lambda x: x.reset_state.call_order):
+    node.reset_state(*args, **kwargs)
 
   return target
 

@@ -28,6 +28,7 @@
 
    StateDictManager
    visible_state_dict
+   check_state_value_tree
 
 
 ``Module`` System
@@ -59,6 +60,7 @@
    visible_module_dict
    call_order
    init_states
+   reset_states
    load_states
    save_states
 
