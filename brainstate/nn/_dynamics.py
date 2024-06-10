@@ -103,6 +103,9 @@ class IF(Neuron):
   def init_state(self, batch_size: int = None, **kwargs):
     self.V = ShortTermState(init.param(jnp.zeros, self.varshape, batch_size))
 
+  def reset_state(self, batch_size: int = None, **kwargs):
+    self.V.value = init.param(jnp.zeros, self.varshape, batch_size)
+
   def get_spike(self, V=None):
     V = self.V.value if V is None else V
     v_scaled = (V - self.V_th) / self.V_th
@@ -160,6 +163,9 @@ class LIF(Neuron):
   def init_state(self, batch_size: int = None, **kwargs):
     self.V = ShortTermState(init.param(init.Constant(self.V_reset), self.varshape, batch_size))
 
+  def reset_state(self, batch_size: int = None, **kwargs):
+    self.V.value = init.param(init.Constant(self.V_reset), self.varshape, batch_size)
+
   def get_spike(self, V=None):
     V = self.V.value if V is None else V
     v_scaled = (V - self.V_th) / self.V_th
@@ -213,6 +219,10 @@ class ALIF(Neuron):
   def init_state(self, batch_size: int = None, **kwargs):
     self.V = ShortTermState(init.param(init.Constant(0.), self.varshape, batch_size))
     self.a = ShortTermState(init.param(init.Constant(0.), self.varshape, batch_size))
+
+  def reset_state(self, batch_size: int = None, **kwargs):
+    self.V.value = init.param(init.Constant(0.), self.varshape, batch_size)
+    self.a.value = init.param(init.Constant(0.), self.varshape, batch_size)
 
   def get_spike(self, V=None, a=None):
     V = self.V.value if V is None else V
@@ -275,6 +285,9 @@ class Expon(Synapse):
   def init_state(self, batch_size: int = None, **kwargs):
     self.g = ShortTermState(init.param(init.Constant(0.), self.varshape, batch_size))
 
+  def reset_state(self, batch_size: int = None, **kwargs):
+    self.g.value = init.param(init.Constant(0.), self.varshape, batch_size)
+
   def update(self, x=None):
     self.g.value = exp_euler_step(self.dg, self.g.value, environ.get('t'))
     if x is not None:
@@ -324,6 +337,10 @@ class STP(Synapse):
   def init_state(self, batch_size: int = None, **kwargs):
     self.x = ShortTermState(init.param(init.Constant(1.), self.varshape, batch_size))
     self.u = ShortTermState(init.param(init.Constant(self.U), self.varshape, batch_size))
+
+  def reset_state(self, batch_size: int = None, **kwargs):
+    self.x.value = init.param(init.Constant(1.), self.varshape, batch_size)
+    self.u.value = init.param(init.Constant(self.U), self.varshape, batch_size)
 
   def du(self, u, t):
     return self.U - u / self.tau_f
@@ -389,6 +406,9 @@ class STD(Synapse):
 
   def init_state(self, batch_size: int = None, **kwargs):
     self.x = ShortTermState(init.param(init.Constant(1.), self.varshape, batch_size))
+
+  def reset_state(self, batch_size: int = None, **kwargs):
+    self.x.value = init.param(init.Constant(1.), self.varshape, batch_size)
 
   def update(self, pre_spike):
     t = environ.get('t')
