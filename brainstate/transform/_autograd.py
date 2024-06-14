@@ -25,8 +25,8 @@ from jax._src.api import _vjp
 from jax.api_util import argnums_partial
 from jax.extend import linear_util
 
-from brainstate._utils import set_module_as
 from brainstate._state import State, StateTrace, StateDictManager
+from brainstate._utils import set_module_as
 
 __all__ = [
   'vector_grad', 'grad', 'jacrev', 'jacfwd', 'jacobian', 'hessian',

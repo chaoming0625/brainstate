@@ -75,7 +75,6 @@ from brainstate._utils import set_module_as
 PyTree = Any
 AxisName = Hashable
 
-
 __all__ = [
   "StatefulFunction",
   "make_jaxpr",

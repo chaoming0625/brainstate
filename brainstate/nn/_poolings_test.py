@@ -18,7 +18,7 @@ class TestFlatten(parameterized.TestCase):
       (10, 20, 30),
     ]:
       arr = bst.random.rand(*size)
-      f = nn.Flatten(start_dim=0)
+      f = nn.Flatten(start_axis=0)
       out = f(arr)
       self.assertTrue(out.shape == (np.prod(size),))
 
@@ -29,21 +29,21 @@ class TestFlatten(parameterized.TestCase):
       (10, 20, 30),
     ]:
       arr = bst.random.rand(*size)
-      f = nn.Flatten(start_dim=1)
+      f = nn.Flatten(start_axis=1)
       out = f(arr)
       self.assertTrue(out.shape == (size[0], np.prod(size[1:])))
 
   def test_flatten3(self):
     size = (16, 32, 32, 8)
     arr = bst.random.rand(*size)
-    f = nn.Flatten(start_dim=0, in_size=(32, 8))
+    f = nn.Flatten(start_axis=0, in_size=(32, 8))
     out = f(arr)
     self.assertTrue(out.shape == (16, 32, 32 * 8))
 
   def test_flatten4(self):
     size = (16, 32, 32, 8)
     arr = bst.random.rand(*size)
-    f = nn.Flatten(start_dim=1, in_size=(32, 32, 8))
+    f = nn.Flatten(start_axis=1, in_size=(32, 32, 8))
     out = f(arr)
     self.assertTrue(out.shape == (16, 32, 32 * 8))
 

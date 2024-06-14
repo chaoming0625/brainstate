@@ -87,4 +87,3 @@ def spike_bitwise(x, y, op: str):
     return spike_bitwise_ixor(x, y)
   else:
     raise NotImplementedError(f"Unsupported bitwise operation: {op}.")
-

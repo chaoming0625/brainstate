@@ -18,11 +18,12 @@
 import functools
 from typing import Union, Dict, Optional, Tuple, Any, TypeVar
 
+import brainunit as bu
 import jax
 import jax.numpy as jnp
 
 from ._lr_scheduler import make_schedule, LearningRateScheduler
-from .. import environ, math
+from .. import environ
 from .._module import Module
 from .._state import State, LongTermState, StateDictManager, visible_state_dict
 
@@ -282,7 +283,7 @@ class Momentum(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.momentum_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.momentum_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr = self.lr()
@@ -349,7 +350,7 @@ class MomentumNesterov(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.momentum_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.momentum_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr = self.lr()
@@ -417,7 +418,7 @@ class Adagrad(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.cache_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.cache_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr = self.lr()
@@ -500,8 +501,8 @@ class Adadelta(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.cache_states[k] = OptimState(math.tree_zeros_like(v.value))
-      self.delta_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.cache_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
+      self.delta_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     weight_values, grad_values, cache_values, delta_values = to_same_dict_tree(
@@ -574,7 +575,7 @@ class RMSProp(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.cache_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.cache_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr = self.lr()
@@ -647,8 +648,8 @@ class Adam(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.m1_states[k] = OptimState(math.tree_zeros_like(v.value))
-      self.m2_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.m1_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
+      self.m2_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr = self.lr()
@@ -730,7 +731,7 @@ class LARS(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.momentum_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.momentum_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr = self.lr()
@@ -835,10 +836,10 @@ class Adan(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.exp_avg_states[k] = OptimState(math.tree_zeros_like(v.value))
-      self.exp_avg_sq_states[k] = OptimState(math.tree_zeros_like(v.value))
-      self.exp_avg_diff_states[k] = OptimState(math.tree_zeros_like(v.value))
-      self.pre_grad_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.exp_avg_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
+      self.exp_avg_sq_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
+      self.exp_avg_diff_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
+      self.pre_grad_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr = self.lr()
@@ -989,10 +990,10 @@ class AdamW(_WeightDecayOptimizer):
     for k, v in train_states.items():
       assert isinstance(v, State), f'"{k}" must be an instance of brainstate.State.'
       self.weight_states.add_unique_elem(k, v)
-      self.m1_states[k] = OptimState(math.tree_zeros_like(v.value))
-      self.m2_states[k] = OptimState(math.tree_zeros_like(v.value))
+      self.m1_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
+      self.m2_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
       if self.amsgrad:
-        self.vmax_states[k] = OptimState(math.tree_zeros_like(v.value))
+        self.vmax_states[k] = OptimState(bu.math.tree_zeros_like(v.value))
 
   def update(self, grads: dict):
     lr_old = self.lr()

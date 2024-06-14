@@ -46,7 +46,6 @@ For handling the delays:
 
 """
 
-import inspect
 import math
 import numbers
 from collections import namedtuple
@@ -58,12 +57,11 @@ import jax.numpy as jnp
 import numpy as np
 
 from . import environ
-from ._utils import set_module_as
 from ._state import State, StateDictManager, visible_state_dict
-from .util import unique_name, DictManager, get_unique_name, DotDict
-from .math import get_dtype
+from ._utils import set_module_as
 from .mixin import Mixin, Mode, DelayedInit, AllOfTypes, Batching, UpdateReturn
 from .transform._jit_error import jit_error
+from .util import unique_name, DictManager, get_unique_name
 
 Shape = Union[int, Sequence[int]]
 PyTree = Any
@@ -258,9 +256,8 @@ class Module(object):
     --------
 
     >>> import brainstate as bst
-    >>> import brainscale as nn  # noqa
     >>> x = bst.random.rand((10, 10))
-    >>> l = nn.Activation(jax.numpy.tanh)
+    >>> l = bst.nn.Activation(jax.numpy.tanh)
     >>> y = x >> l
     """
     return self.__call__(other)
@@ -402,8 +399,8 @@ class visible_module_list(list):
   retieved when using :py:func:`~.nodes()` function.
 
   >>> import brainstate as bst
-  >>> l = bst.visible_module_list([bp.dnn.Dense(1, 2),
-  >>>                     bp.dnn.LSTMCell(2, 3)])
+  >>> l = bst.visible_module_list([bst.nn.Linear(1, 2),
+  >>>                              bst.nn.LSTMCell(2, 3)])
   """
 
   __module__ = 'brainstate'
@@ -1063,7 +1060,7 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
   ):
 
     # target information
-    self.target_info = jax.tree.map(lambda a: jax.ShapeDtypeStruct(a.shape, get_dtype(a)), target_info)
+    self.target_info = jax.tree.map(lambda a: jax.ShapeDtypeStruct(a.shape, a.dtype), target_info)
 
     # delay method
     assert method in [ROTATE_UPDATE, CONCAT_UPDATE]

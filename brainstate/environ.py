@@ -24,7 +24,6 @@ __all__ = [
   'dftype', 'ditype', 'dutype', 'dctype',
 ]
 
-
 # Default, there are several shared arguments in the global context.
 I = 'i'  # the index of the current computation.
 T = 't'  # the current time of the current computation.

@@ -26,7 +26,6 @@ from jax.lib import xla_bridge
 
 from ._utils import set_module_as
 
-
 __all__ = [
   'unique_name',
   'clear_buffer_memory',

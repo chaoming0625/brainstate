@@ -14,12 +14,11 @@
 # ==============================================================================
 
 from __future__ import annotations
+
 import copy
 from typing import Optional
 
 import jax
-
-from brainstate import environ
 
 try:
   from tqdm.auto import tqdm
@@ -95,7 +94,6 @@ class ProgressBarRunner(object):
     self.tqdm_bars[0].close()
 
   def __call__(self, iter_num, *args, **kwargs):
-
     _ = jax.lax.cond(
       iter_num == 0,
       lambda: jax.debug.callback(self._define_tqdm),

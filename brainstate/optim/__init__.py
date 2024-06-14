@@ -20,4 +20,3 @@ from ._sgd_optimizer import *
 from ._sgd_optimizer import __all__ as optimizer_all
 
 __all__ = scheduler_all + optimizer_all
-

@@ -21,12 +21,13 @@ import functools
 from typing import Sequence, Optional
 from typing import Union, Tuple, Callable, List
 
+import brainunit as bu
 import jax
 import jax.numpy as jnp
 import numpy as np
 
 from ._base import DnnLayer, ExplicitInOutSize
-from .. import environ, math
+from .. import environ
 from ..mixin import Mode
 from ..typing import Size
 
@@ -53,8 +54,8 @@ class Flatten(DnnLayer, ExplicitInOutSize):
 
   Args:
       in_size: Sequence of int. The shape of the input tensor.
-      start_dim: first dim to flatten (default = 1).
-      end_dim: last dim to flatten (default = -1).
+      start_axis: first dim to flatten (default = 1).
+      end_axis: last dim to flatten (default = -1).
 
   Examples::
       >>> import brainstate as bst
@@ -74,36 +75,36 @@ class Flatten(DnnLayer, ExplicitInOutSize):
 
   def __init__(
       self,
-      start_dim: int = 0,
-      end_dim: int = -1,
+      start_axis: int = 0,
+      end_axis: int = -1,
       in_size: Optional[Size] = None
   ) -> None:
     super().__init__()
-    self.start_dim = start_dim
-    self.end_dim = end_dim
+    self.start_axis = start_axis
+    self.end_axis = end_axis
 
     if in_size is not None:
       self.in_size = tuple(in_size)
-      y = jax.eval_shape(functools.partial(math.flatten, start_dim=start_dim, end_dim=end_dim),
+      y = jax.eval_shape(functools.partial(bu.math.flatten, start_axis=start_axis, end_axis=end_axis),
                          jax.ShapeDtypeStruct(self.in_size, environ.dftype()))
       self.out_size = y.shape
 
   def update(self, x):
     if self._in_size is None:
-      start_dim = self.start_dim if self.start_dim >= 0 else x.ndim + self.start_dim
+      start_axis = self.start_axis if self.start_axis >= 0 else x.ndim + self.start_axis
     else:
       assert x.ndim >= len(self.in_size), 'Input tensor has fewer dimensions than the expected shape.'
       dim_diff = x.ndim - len(self.in_size)
       if self.in_size != x.shape[dim_diff:]:
         raise ValueError(f'Input tensor has shape {x.shape}, but expected shape {self.in_size}.')
-      if self.start_dim >= 0:
-        start_dim = self.start_dim + dim_diff
+      if self.start_axis >= 0:
+        start_axis = self.start_axis + dim_diff
       else:
-        start_dim = x.ndim + self.start_dim
-    return math.flatten(x, start_dim, self.end_dim)
+        start_axis = x.ndim + self.start_axis
+    return bu.math.flatten(x, start_axis, self.end_axis)
 
   def __repr__(self) -> str:
-    return f'{self.__class__.__name__}(start_dim={self.start_dim}, end_dim={self.end_dim})'
+    return f'{self.__class__.__name__}(start_axis={self.start_axis}, end_axis={self.end_axis})'
 
 
 class Unflatten(DnnLayer, ExplicitInOutSize):
@@ -124,7 +125,7 @@ class Unflatten(DnnLayer, ExplicitInOutSize):
         :math:`\prod_{i=1}^n U_i = S_{\text{dim}}`.
 
   Args:
-      dim: int, Dimension to be unflattened.
+      axis: int, Dimension to be unflattened.
       sizes: Sequence of int. New shape of the unflattened dimension.
       in_size: Sequence of int. The shape of the input tensor.
   """
@@ -132,7 +133,7 @@ class Unflatten(DnnLayer, ExplicitInOutSize):
 
   def __init__(
       self,
-      dim: int,
+      axis: int,
       sizes: Size,
       mode: Mode = None,
       name: str = None,
@@ -140,7 +141,7 @@ class Unflatten(DnnLayer, ExplicitInOutSize):
   ) -> None:
     super().__init__(mode=mode, name=name)
 
-    self.dim = dim
+    self.axis = axis
     self.sizes = sizes
     if isinstance(sizes, (tuple, list)):
       for idx, elem in enumerate(sizes):
@@ -152,15 +153,15 @@ class Unflatten(DnnLayer, ExplicitInOutSize):
 
     if in_size is not None:
       self.in_size = tuple(in_size)
-      y = jax.eval_shape(functools.partial(math.unflatten, dim=dim, sizes=sizes),
+      y = jax.eval_shape(functools.partial(bu.math.unflatten, axis=axis, sizes=sizes),
                          jax.ShapeDtypeStruct(self.in_size, environ.dftype()))
       self.out_size = y.shape
 
   def update(self, x):
-    return math.unflatten(x, self.dim, self.sizes)
+    return bu.math.unflatten(x, self.axis, self.sizes)
 
   def __repr__(self):
-    return f'{self.__class__.__name__}(dim={self.dim}, sizes={self.sizes})'
+    return f'{self.__class__.__name__}(axis={self.axis}, sizes={self.sizes})'
 
 
 class _MaxPool(DnnLayer, ExplicitInOutSize):

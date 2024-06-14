@@ -19,10 +19,11 @@ from __future__ import annotations
 from functools import partial
 from typing import Optional
 
+import brainunit as bu
 import jax.numpy as jnp
 
 from ._base import DnnLayer
-from .. import random, math, environ, typing, init
+from .. import random, environ, typing, init
 from ..mixin import Mode
 
 __all__ = [
@@ -88,7 +89,7 @@ class DropoutFixed(DnnLayer):
     self.mask = init.param(partial(random.bernoulli, self.prob), self.in_size, batch_size)
 
   def update(self, x):
-    dtype = math.get_dtype(x)
+    dtype = bu.math.get_dtype(x)
     fit_phase = environ.get('fit', desc='Whether this is a fitting process. Bool.')
     if fit_phase:
       assert self.mask.shape == x.shape, (f"Input shape {x.shape} does not match the mask shape {self.mask.shape}. "
