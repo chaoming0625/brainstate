@@ -46,7 +46,6 @@ For handling the delays:
 
 """
 
-import inspect
 import math
 import numbers
 from collections import namedtuple
@@ -58,12 +57,12 @@ import jax.numpy as jnp
 import numpy as np
 
 from . import environ
-from ._utils import set_module_as
 from ._state import State, StateDictManager, visible_state_dict
-from .util import unique_name, DictManager, get_unique_name, DotDict
+from ._utils import set_module_as
 from .math import get_dtype
 from .mixin import Mixin, Mode, DelayedInit, AllOfTypes, Batching, UpdateReturn
 from .transform._jit_error import jit_error
+from .util import unique_name, DictManager, get_unique_name
 
 Shape = Union[int, Sequence[int]]
 PyTree = Any
