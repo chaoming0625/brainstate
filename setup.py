@@ -40,9 +40,11 @@ with io.open(os.path.join(here, 'README.md'), 'r', encoding='utf-8') as f:
 
 # installation packages
 packages = find_packages(
-  exclude=["docs*", "tests*", "examples*", "experiments*", "build*",
-           "dist*", "brainstate.egg-info*", "brainstate/__pycache__*",
-           "brainstate/__init__.py"]
+  exclude=[
+    "docs*", "tests*", "examples*", "experiments*", "build*",
+    "dist*", "brainstate.egg-info*", "brainstate/__pycache__*",
+    "brainstate/__init__.py"
+  ]
 )
 
 # setup
@@ -56,7 +58,7 @@ setup(
   author_email='chao.brain@qq.com',
   packages=packages,
   python_requires='>=3.9',
-  install_requires=['numpy>=1.15', 'jax', 'tqdm'],
+  install_requires=['numpy>=1.15', 'jax', 'tqdm', 'brainunit'],
   url='https://github.com/brainpy/brainstate',
   project_urls={
     "Bug Tracker": "https://github.com/brainpy/brainstate/issues",
