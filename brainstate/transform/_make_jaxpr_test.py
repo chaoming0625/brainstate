@@ -129,5 +129,3 @@ def test_return_states():
 
   with pytest.raises(ValueError):
     f()
-
-

@@ -16,7 +16,6 @@
 import unittest
 
 import jax.numpy as jnp
-import jax.stages
 
 import brainstate as bc
 
@@ -90,7 +89,6 @@ class TestJIT(unittest.TestCase):
     self.assertTrue(len(compiling) == 2)
 
   def test_jit_attribute_origin_fun(self):
-
     def fun1(x):
       return x
 
@@ -99,4 +97,3 @@ class TestJIT(unittest.TestCase):
     self.assertTrue(isinstance(jitted_fun.stateful_fun, bc.transform.StatefulFunction))
     self.assertTrue(callable(jitted_fun.jitted_fun))
     self.assertTrue(callable(jitted_fun.clear_cache))
-

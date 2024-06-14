@@ -130,4 +130,3 @@ class TestModule(unittest.TestCase):
     print(b.states())
     print(b.states(level=0))
     print(b.states(level=0))
-

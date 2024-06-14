@@ -20,9 +20,10 @@ from enum import Enum
 from functools import wraps
 from typing import Sequence, Callable
 
+import brainunit as bu
 import jax.numpy as jnp
 
-from .. import environ, math
+from .. import environ
 from .._state import State
 from ..transform import vector_grad
 
@@ -96,7 +97,7 @@ def exp_euler(fun):
       )
     dt = environ.get('dt')
     linear, derivative = vector_grad(fun, argnums=0, return_value=True)(*args, **kwargs)
-    phi = math.exprel(dt * linear)
+    phi = bu.math.exprel(dt * linear)
     return args[0] + dt * phi * derivative
 
   return integral
@@ -128,5 +129,5 @@ def exp_euler_step(fun: Callable, *args, **kwargs):
     )
   dt = environ.get('dt')
   linear, derivative = vector_grad(fun, argnums=0, return_value=True)(*args, **kwargs)
-  phi = math.exprel(dt * linear)
+  phi = bu.math.exprel(dt * linear)
   return args[0] + dt * phi * derivative

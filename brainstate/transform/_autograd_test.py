@@ -537,7 +537,6 @@ class TestPureFuncJacobian(unittest.TestCase):
 
   def test_jacrev_return_aux1(self):
     with bc.environ.context(precision=64):
-
       def f1(x, y):
         a = 4 * x[1] ** 2 - 2 * x[2]
         r = jnp.asarray([x[0] * y[0], 5 * x[2] * y[1], a, x[2] * jnp.sin(x[0])])
@@ -562,7 +561,6 @@ class TestPureFuncJacobian(unittest.TestCase):
       assert (grads[1] == _g2[1]).all()
       assert aux == _a
       assert (vec == _r).all()
-
 
 
 class TestClassFuncJacobian(unittest.TestCase):
