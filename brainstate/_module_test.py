@@ -98,7 +98,7 @@ class TestDelay(unittest.TestCase):
       with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
         rotation_delay.retrieve_at_time(0.01)
 
-  def test_concat_delay_round_interp(self):
+  def test_round_interp(self):
     for shape in [(1,), (1, 1), (1, 1, 1)]:
       for delay_method in ['rotation', 'concat']:
         rotation_delay = bst.Delay(jnp.ones(shape), time=2., delay_method=delay_method, interp_method='round')
@@ -107,47 +107,53 @@ class TestDelay(unittest.TestCase):
         t2, n2 = 1.06, 11
         rotation_delay.init_state()
 
+        @bst.transform.jit
+        def retrieve(td, i):
+          with bst.environ.context(i=i, t=i * bst.environ.get_dt()):
+            return rotation_delay.retrieve_at_time(td)
+
         print()
         for i in range(100):
           t = i * bst.environ.get_dt()
           with bst.environ.context(i=i, t=t):
             rotation_delay(jnp.ones(shape) * i)
             print(i,
-                  rotation_delay.retrieve_at_time(t - t0),
-                  rotation_delay.retrieve_at_time(t - t1),
-                  rotation_delay.retrieve_at_time(t - t2))
-            self.assertTrue(jnp.allclose(rotation_delay.retrieve_at_time(t - t0),
-                                         jnp.ones(shape) * i))
-            self.assertTrue(jnp.allclose(rotation_delay.retrieve_at_time(t - t1),
-                                         jnp.maximum(jnp.ones(shape) * i - n1, 0.)))
-            self.assertTrue(jnp.allclose(rotation_delay.retrieve_at_time(t - t2),
-                                         jnp.maximum(jnp.ones(shape) * i - n2, 0.)))
+                  retrieve(t - t0, i),
+                  retrieve(t - t1, i),
+                  retrieve(t - t2, i))
+            self.assertTrue(jnp.allclose(retrieve(t - t0, i), jnp.ones(shape) * i))
+            self.assertTrue(jnp.allclose(retrieve(t - t1, i), jnp.maximum(jnp.ones(shape) * i - n1, 0.)))
+            self.assertTrue(jnp.allclose(retrieve(t - t2, i), jnp.maximum(jnp.ones(shape) * i - n2, 0.)))
         bst.util.clear_buffer_memory()
 
-  def test_concat_delay_linear_interp(self):
+  def test_linear_interp(self):
     for shape in [(1,), (1, 1), (1, 1, 1)]:
       for delay_method in ['rotation', 'concat']:
+        print(shape, delay_method)
+
         rotation_delay = bst.Delay(jnp.ones(shape), time=2., delay_method=delay_method, interp_method='linear_interp')
         t0, n0 = 0.01, 0.1
         t1, n1 = 1.04, 10.4
         t2, n2 = 1.06, 10.6
         rotation_delay.init_state()
 
+        @bst.transform.jit
+        def retrieve(td, i):
+          with bst.environ.context(i=i, t=i * bst.environ.get_dt()):
+            return rotation_delay.retrieve_at_time(td)
+
         print()
         for i in range(100):
           t = i * bst.environ.get_dt()
           with bst.environ.context(i=i, t=t):
             rotation_delay(jnp.ones(shape) * i)
             print(i,
-                  rotation_delay.retrieve_at_time(t - t0),
-                  rotation_delay.retrieve_at_time(t - t1),
-                  rotation_delay.retrieve_at_time(t - t2))
-            self.assertTrue(jnp.allclose(rotation_delay.retrieve_at_time(t - t0),
-                                         jnp.maximum(jnp.ones(shape) * i - n0, 0.)))
-            self.assertTrue(jnp.allclose(rotation_delay.retrieve_at_time(t - t1),
-                                         jnp.maximum(jnp.ones(shape) * i - n1, 0.)))
-            self.assertTrue(jnp.allclose(rotation_delay.retrieve_at_time(t - t2),
-                                         jnp.maximum(jnp.ones(shape) * i - n2, 0.)))
+                  retrieve(t - t0, i),
+                  retrieve(t - t1, i),
+                  retrieve(t - t2, i))
+            self.assertTrue(jnp.allclose(retrieve(t - t0, i), jnp.maximum(jnp.ones(shape) * i - n0, 0.)))
+            self.assertTrue(jnp.allclose(retrieve(t - t1, i), jnp.maximum(jnp.ones(shape) * i - n1, 0.)))
+            self.assertTrue(jnp.allclose(retrieve(t - t2, i), jnp.maximum(jnp.ones(shape) * i - n2, 0.)))
         bst.util.clear_buffer_memory()
 
   def test_rotation_and_concat_delay(self):

@@ -1273,35 +1273,38 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
       jit_error(jnp.logical_or(delay_time > current_time,
                                delay_time < current_time - self.max_time - dt),
                 _check_delay,
-                (current_time, delay_time,))
+                (current_time, delay_time))
 
     diff = current_time - delay_time
     float_time_step = diff / dt
 
     if self.interp_method == _INTERP_LINEAR:  # "linear" interpolation
-      def _interp(target):
-        if len(indices) > 0:
-          raise NotImplementedError('The slicing indices are not supported in the linear interpolation.')
+      # def _interp(target):
+        # if len(indices) > 0:
+        #   raise NotImplementedError('The slicing indices are not supported in the linear interpolation.')
+        # if self.delay_method == _DELAY_ROTATE:
+        #   i = environ.get(environ.I, desc='The time step index.')
+        #   _interp_fun = partial(jnp.interp, period=self.max_length)
+        #   for dim in range(1, target.ndim, 1):
+        #     _interp_fun = jax.vmap(_interp_fun, in_axes=(None, None, dim), out_axes=dim - 1)
+        #   di = i - jnp.arange(self.max_length)
+        #   delay_idx = jnp.asarray(di % self.max_length, dtype=jnp.int32)
+        #   return _interp_fun(float_time_step, delay_idx, target)
+        #
+        # elif self.delay_method == _DELAY_CONCAT:
+        #   _interp_fun = partial(jnp.interp, period=self.max_length)
+        #   for dim in range(1, target.ndim, 1):
+        #     _interp_fun = jax.vmap(_interp_fun, in_axes=(None, None, dim), out_axes=dim - 1)
+        #   return _interp_fun(float_time_step, jnp.arange(self.max_length), target)
+        #
+        # else:
+        #   raise ValueError(f'Unknown delay updating method "{self.delay_method}"')
+      # return jax.tree.map(_interp, self.history.value)
 
-        if self.delay_method == _DELAY_ROTATE:
-          i = environ.get(environ.I, desc='The time step index.')
-          _interp_fun = partial(jnp.interp, period=self.max_length)
-          for dim in range(1, target.ndim, 1):
-            _interp_fun = jax.vmap(_interp_fun, in_axes=(None, None, dim), out_axes=dim - 1)
-          di = i - jnp.arange(self.max_length)
-          delay_idx = jnp.asarray(di % self.max_length, dtype=jnp.int32)
-          return _interp_fun(float_time_step, delay_idx, target)
-
-        elif self.delay_method == _DELAY_CONCAT:
-          _interp_fun = partial(jnp.interp, period=self.max_length)
-          for dim in range(1, target.ndim, 1):
-            _interp_fun = jax.vmap(_interp_fun, in_axes=(None, None, dim), out_axes=dim - 1)
-          return _interp_fun(float_time_step, jnp.arange(self.max_length), target)
-
-        else:
-          raise ValueError(f'Unknown delay updating method "{self.delay_method}"')
-
-      return jax.tree.map(_interp, self.history.value)
+      data_at_t0 = self.retrieve_at_step(jnp.asarray(jnp.floor(float_time_step), dtype=jnp.int32), *indices)
+      data_at_t1 = self.retrieve_at_step(jnp.asarray(jnp.ceil(float_time_step), dtype=jnp.int32), *indices)
+      t_diff = float_time_step - jnp.floor(float_time_step)
+      return jax.tree.map(lambda a, b: a * (1 - t_diff) + b * t_diff, data_at_t0, data_at_t1)
 
     elif self.interp_method == _INTERP_ROUND:  # "round" interpolation
       return self.retrieve_at_step(
