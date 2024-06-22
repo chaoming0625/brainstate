@@ -66,13 +66,9 @@ setup(
     "Source Code": "https://github.com/brainpy/brainstate",
   },
   extras_require={
-    'cpu': ['jaxlib', 'brainpylib'],
-    'cuda11': ['jaxlib[cuda11_pip]', 'brainpylib'],
-    'cuda12': ['jaxlib[cuda12_pip]', 'brainpylib'],
+    'cpu': ['jaxlib'],
+    'cuda12': ['jaxlib[cuda12_pip]'],
     'tpu': ['jaxlib[tpu]'],
-    'cpu_mini': ['jaxlib'],
-    'cuda11_mini': ['jaxlib[cuda11_pip]'],
-    'cuda12_mini': ['jaxlib[cuda12_pip]'],
   },
   keywords=('computational neuroscience, '
             'brain-inspired computation, '
