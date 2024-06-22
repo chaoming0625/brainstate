@@ -68,7 +68,7 @@ class DelayedInit(Mixin):
   Note this Mixin can be applied in any Python object.
   """
 
-  non_hash_params: Optional[Sequence[str]] = None
+  non_hashable_params: Optional[Sequence[str]] = None
 
   @classmethod
   def delayed(cls, *args, **kwargs) -> 'DelayedInitializer':
@@ -94,7 +94,7 @@ class DelayedInitializer(metaclass=NoSubclassMeta):
   """
 
   def __init__(self, cls: T, *desc_tuple, **desc_dict):
-    self.cls = cls
+    self.cls: type = cls
 
     # arguments
     self.args = desc_tuple

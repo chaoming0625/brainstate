@@ -17,6 +17,7 @@ import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 
+import brainunit as bu
 import brainstate as bst
 
 bst.environ.set(dt=0.01)
@@ -40,8 +41,7 @@ class HHWithEuler(bst.Dynamics):
     self.V_th = V_th
 
   # m channel
-  # m_alpha = lambda self, V: 0.1 * (V + 40) / (1 - bm.exp(-(V + 40) / 10))
-  m_alpha = lambda self, V: 1. / bst.math.exprel(-(V + 40) / 10)
+  m_alpha = lambda self, V: 1. / bu.math.exprel(-(V + 40) / 10)
   m_beta = lambda self, V: 4.0 * jnp.exp(-(V + 65) / 18)
   m_inf = lambda self, V: self.m_alpha(V) / (self.m_alpha(V) + self.m_beta(V))
   dm = lambda self, m, t, V: self.m_alpha(V) * (1 - m) - self.m_beta(V) * m
@@ -53,8 +53,7 @@ class HHWithEuler(bst.Dynamics):
   dh = lambda self, h, t, V: self.h_alpha(V) * (1 - h) - self.h_beta(V) * h
 
   # n channel
-  # n_alpha = lambda self, V: 0.01 * (V + 55) / (1 - bm.exp(-(V + 55) / 10))
-  n_alpha = lambda self, V: 0.1 / bst.math.exprel(-(V + 55) / 10)
+  n_alpha = lambda self, V: 0.1 / bu.math.exprel(-(V + 55) / 10)
   n_beta = lambda self, V: 0.125 * jnp.exp(-(V + 65) / 80)
   n_inf = lambda self, V: self.n_alpha(V) / (self.n_alpha(V) + self.n_beta(V))
   dn = lambda self, n, t, V: self.n_alpha(V) * (1 - n) - self.n_beta(V) * n
