@@ -64,9 +64,6 @@ def _any_without_vmap_batch(x, batch_axes):
 _any_no_vmap_prim.def_impl(_any_without_vmap_imp)
 _any_no_vmap_prim.def_abstract_eval(_any_without_vmap_abs)
 batching.primitive_batchers[_any_no_vmap_prim] = _any_without_vmap_batch
-if hasattr(xla, "lower_fun"):
-  xla.register_translation(_any_no_vmap_prim,
-                           xla.lower_fun(_any_without_vmap_imp, multiple_results=False, new_style=True))
 mlir.register_lowering(_any_no_vmap_prim, mlir.lower_fun(_any_without_vmap_imp, multiple_results=False))
 
 _all_no_vmap_prim = Primitive('all_no_vmap')
@@ -99,12 +96,11 @@ mlir.register_lowering(_all_no_vmap_prim, mlir.lower_fun(_all_without_vmap_imp, 
 
 
 def _err_jit_true_branch(err_fun, x):
-  jax.debug.callback(err_fun, x)
-  return
+  jax.pure_callback(err_fun, None, x)
 
 
 def _err_jit_false_branch(x):
-  return
+  pass
 
 
 def _cond(err_fun, pred, err_arg):
@@ -126,13 +122,30 @@ def _error_msg(msg, *arg):
 
 
 @set_module_as('brainstate.transform')
-def jit_error(pred, err_fun: Union[Callable, str], err_arg=None, scope: str = 'any'):
-  """Check errors in a jit function.
+def jit_error(
+    pred,
+    err_fun: Union[Callable, str],
+    err_arg=None,
+    scope: str = 'any'
+):
+  """
+  Check errors in a jit function.
+
+  Examples
+  --------
+
+  It can give a function which receive arguments that passed from the JIT variables and raise errors.
 
   >>> def error(arg):
   >>>    raise ValueError(f'error {arg}')
   >>> x = jax.random.uniform(jax.random.PRNGKey(0), (10,))
   >>> jit_error(x.sum() < 5., error, err_arg=x)
+
+  Or, it can be a simple string message.
+
+  >>> x = jax.random.uniform(jax.random.PRNGKey(0), (10,))
+  >>> jit_error(x.sum() < 5., "Error: the sum is less than 5.")
+
 
   Parameters
   ----------

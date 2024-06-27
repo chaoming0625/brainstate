@@ -369,11 +369,11 @@ class StatefulFunction(object):
     self._state_trace[cache_key] = _state_trace
     with _state_trace:
       out = self.fun(*args, **kwargs)
-      state_values = _state_trace.collect_values('read', 'write')
+      state_values = _state_trace.collect_values('read', 'write', check_val_tree=True)
     _state_trace.recovery_original_values()
 
-    # return states is not allowed
-    # checking whether the states are returned
+    # State instance as functional returns is not allowed.
+    # Checking whether the states are returned.
     for leaf in jax.tree.leaves(out):
       if isinstance(leaf, State):
         leaf._raise_error_with_source_info(ValueError(f"State object is not allowed to be returned: {leaf}"))
@@ -399,7 +399,6 @@ class StatefulFunction(object):
     if cache_key not in self._state_trace:
       try:
         # jaxpr
-        # jaxpr, (out_shapes, state_shapes) = jax.make_jaxpr(
         jaxpr, (out_shapes, state_shapes) = _make_jaxpr(
           functools.partial(self._wrapped_fun_to_eval, cache_key),
           static_argnums=self.static_argnums,
@@ -435,8 +434,11 @@ class StatefulFunction(object):
     """
     # state checking
     cache_key = self.get_arg_cache_key(*args, **kwargs)
-    states = self.get_states(cache_key)
+    states: Sequence[State] = self.get_states(cache_key)
     assert len(state_vals) == len(states), 'State length mismatch.'
+    # # No need to check, because the make_jaxpr() has been checked whether the value's tree is correct.
+    # for val, st in zip(state_vals, states):  # check state's value tree structure
+    #   st._check_value_tree(val)
 
     # parameters
     args = tuple(args[i] for i in range(len(args)) if i not in self.static_argnums)
@@ -450,6 +452,9 @@ class StatefulFunction(object):
     # output processing
     out, new_state_vals = out_treedef.unflatten(jaxpr_outs)
     assert len(new_state_vals) == len(state_vals), 'State length mismatch.'
+    # # No need to check, because the make_jaxpr() has been checked whether the value's tree is correct.
+    # for val, st in zip(new_state_vals, states):  # check state's value tree structure
+    #   st._check_value_tree(val)
     return new_state_vals, out
 
   def jaxpr_call_auto(self, *args, **kwargs) -> Any:
