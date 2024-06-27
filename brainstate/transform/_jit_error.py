@@ -15,14 +15,14 @@
 
 from __future__ import annotations
 
-from functools import wraps, partial
+import functools
+from functools import partial
 from typing import Callable, Union
 
 import jax
 from jax import numpy as jnp
 from jax.core import Primitive, ShapedArray
-from jax.interpreters import batching, mlir, xla
-from jax.lax import cond
+from jax.interpreters import batching, mlir
 
 from brainstate._utils import set_module_as
 
@@ -32,16 +32,39 @@ __all__ = [
 
 
 @set_module_as('brainstate.transform')
-def remove_vmap(x, op='any'):
+def remove_vmap(x, op: str = 'any'):
   if op == 'any':
     return _any_without_vmap(x)
   elif op == 'all':
     return _all_without_vmap(x)
+  elif op == 'none':
+    return _without_vmap(x)
   else:
     raise ValueError(f'Do not support type: {op}')
 
 
-_any_no_vmap_prim = Primitive('any_no_vmap')
+def _without_vmap(x):
+  return _no_vmap_prim.bind(x)
+
+
+def _without_vmap_imp(x):
+  return x
+
+
+def _without_vmap_abs(x):
+  return x
+
+
+def _without_vmap_batch(x, batch_axes):
+  (x,) = x
+  return _without_vmap(x), batching.not_mapped
+
+
+_no_vmap_prim = Primitive('no_vmap')
+_no_vmap_prim.def_impl(_without_vmap_imp)
+_no_vmap_prim.def_abstract_eval(_without_vmap_abs)
+batching.primitive_batchers[_no_vmap_prim] = _without_vmap_batch
+mlir.register_lowering(_no_vmap_prim, mlir.lower_fun(_without_vmap_imp, multiple_results=False))
 
 
 def _any_without_vmap(x):
@@ -61,12 +84,11 @@ def _any_without_vmap_batch(x, batch_axes):
   return _any_without_vmap(x), batching.not_mapped
 
 
+_any_no_vmap_prim = Primitive('any_no_vmap')
 _any_no_vmap_prim.def_impl(_any_without_vmap_imp)
 _any_no_vmap_prim.def_abstract_eval(_any_without_vmap_abs)
 batching.primitive_batchers[_any_no_vmap_prim] = _any_without_vmap_batch
 mlir.register_lowering(_any_no_vmap_prim, mlir.lower_fun(_any_without_vmap_imp, multiple_results=False))
-
-_all_no_vmap_prim = Primitive('all_no_vmap')
 
 
 def _all_without_vmap(x):
@@ -86,47 +108,35 @@ def _all_without_vmap_batch(x, batch_axes):
   return _all_without_vmap(x), batching.not_mapped
 
 
+_all_no_vmap_prim = Primitive('all_no_vmap')
 _all_no_vmap_prim.def_impl(_all_without_vmap_imp)
 _all_no_vmap_prim.def_abstract_eval(_all_without_vmap_abs)
 batching.primitive_batchers[_all_no_vmap_prim] = _all_without_vmap_batch
-if hasattr(xla, "lower_fun"):
-  xla.register_translation(_all_no_vmap_prim,
-                           xla.lower_fun(_all_without_vmap_imp, multiple_results=False, new_style=True))
 mlir.register_lowering(_all_no_vmap_prim, mlir.lower_fun(_all_without_vmap_imp, multiple_results=False))
 
 
-def _err_jit_true_branch(err_fun, x):
-  jax.pure_callback(err_fun, None, x)
+def _err_jit_true_branch(err_fun, args, kwargs):
+  jax.debug.callback(err_fun, *args, **kwargs)
 
 
-def _err_jit_false_branch(x):
+def _err_jit_false_branch(args, kwargs):
   pass
 
 
-def _cond(err_fun, pred, err_arg):
-  @wraps(err_fun)
-  def true_err_fun(*arg):
-    err_fun(*arg)
-
-  cond(pred,
-       partial(_err_jit_true_branch, true_err_fun),
-       _err_jit_false_branch,
-       err_arg)
-
-
-def _error_msg(msg, *arg):
-  if len(arg) == 0:
-    raise ValueError(msg)
-  else:
-    raise ValueError(msg.format(arg))
+def _error_msg(msg, *arg, **kwargs):
+  if len(arg):
+    msg = msg % arg
+  if len(kwargs):
+    msg = msg.format(**kwargs)
+  raise ValueError(msg)
 
 
 @set_module_as('brainstate.transform')
 def jit_error(
     pred,
     err_fun: Union[Callable, str],
-    err_arg=None,
-    scope: str = 'any'
+    *err_args,
+    **err_kwargs,
 ):
   """
   Check errors in a jit function.
@@ -136,15 +146,15 @@ def jit_error(
 
   It can give a function which receive arguments that passed from the JIT variables and raise errors.
 
-  >>> def error(arg):
-  >>>    raise ValueError(f'error {arg}')
+  >>> def error(x):
+  >>>    raise ValueError(f'error {x}')
   >>> x = jax.random.uniform(jax.random.PRNGKey(0), (10,))
-  >>> jit_error(x.sum() < 5., error, err_arg=x)
+  >>> jit_error(x.sum() < 5., error, x)
 
   Or, it can be a simple string message.
 
   >>> x = jax.random.uniform(jax.random.PRNGKey(0), (10,))
-  >>> jit_error(x.sum() < 5., "Error: the sum is less than 5.")
+  >>> jit_error(x.sum() < 5., "Error: the sum is less than 5. Got {s}", s=x.sum())
 
 
   Parameters
@@ -153,19 +163,18 @@ def jit_error(
     The boolean prediction.
   err_fun: callable
     The error function, which raise errors.
-  err_arg: any
+  err_args: 
     The arguments which passed into `err_f`.
-  scope: str
-    The scope of the error message. Can be None, 'all' or 'any'.
+  err_kwargs: 
+    The keywords which passed into `err_f`.
   """
   if isinstance(err_fun, str):
     err_fun = partial(_error_msg, err_fun)
-  if scope is None:
-    pred = pred
-  elif scope == 'all':
-    pred = remove_vmap(pred, 'all')
-  elif scope == 'any':
-    pred = remove_vmap(pred, 'any')
-  else:
-    raise ValueError(f"Unknown scope: {scope}")
-  _cond(err_fun, pred, err_arg)
+
+  jax.lax.cond(
+    remove_vmap(pred, op='any'),
+    partial(_err_jit_true_branch, err_fun),
+    _err_jit_false_branch,
+    jax.tree.map(functools.partial(remove_vmap, op='none'), err_args),
+    jax.tree.map(functools.partial(remove_vmap, op='none'), err_kwargs),
+  )

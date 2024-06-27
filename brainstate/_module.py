@@ -1216,7 +1216,7 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
     if environ.get(environ.JIT_ERROR_CHECK, False):
       def _check_delay(delay_len):
         raise ValueError(f'The request delay length should be less than the '
-                         f'maximum delay {self.max_length}. But we got {delay_len}')
+                         f'maximum delay {self.max_length - 1}. But we got {delay_len}')
 
       jit_error(delay_step >= self.max_length, _check_delay, delay_step)
 
@@ -1264,8 +1264,7 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
     dt = environ.get_dt()
 
     if environ.get(environ.JIT_ERROR_CHECK, False):
-      def _check_delay(args):
-        t_now, t_delay = args
+      def _check_delay(t_now, t_delay):
         raise ValueError(f'The request delay time should be within '
                          f'[{t_now - self.max_time - dt}, {t_now}], '
                          f'but we got {t_delay}')
@@ -1273,7 +1272,7 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
       jit_error(jnp.logical_or(delay_time > current_time,
                                delay_time < current_time - self.max_time - dt),
                 _check_delay,
-                (current_time, delay_time))
+                current_time, delay_time)
 
     diff = current_time - delay_time
     float_time_step = diff / dt
