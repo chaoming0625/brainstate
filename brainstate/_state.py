@@ -141,7 +141,7 @@ class State(object):
     """
     # value checking
     v = v.value if isinstance(v, State) else v
-    self._check_value(v)
+    self._check_value_tree(v)
     # write the value by the stack (>= level)
     trace: StateTrace
     for trace in thread_local_stack.stack[self._level:]:
@@ -149,9 +149,9 @@ class State(object):
     # set the value
     self._value = v
 
-  def _check_value(self, v):
+  def _check_value_tree(self, v):
     if self._check_tree or _global_context_to_check_state_tree[-1]:
-      in_tree = jax.tree_util.tree_structure(v)
+      in_tree = jax.tree.structure(v)
       if in_tree != self._tree:
         self._raise_error_with_source_info(
           ValueError(f'The given value {in_tree} does not '
@@ -370,12 +370,13 @@ class StateTrace(object):
       self.types[index] = 'write'
       self._written_ids.add(id_)
 
-  def collect_values(self, *categories: str) -> Tuple:
+  def collect_values(self, *categories: str, check_val_tree: bool = False) -> Tuple:
     """
     Collect the values by the given categories.
 
     Args:
       *categories: The categories.
+      check_val_tree: Whether to check the tree structure of the value.
 
     Returns:
       results: The values.
@@ -383,7 +384,10 @@ class StateTrace(object):
     results = []
     for st, ty in zip(self.states, self.types):
       if ty in categories:
-        results.append(st.value)
+        val = st.value
+        if check_val_tree:
+          st._check_value_tree(val)
+        results.append(val)
     return tuple(results)
 
   def recovery_original_values(self) -> None:

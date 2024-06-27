@@ -1213,7 +1213,7 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
     assert self.history is not None, 'The delay history is not initialized.'
     assert delay_step is not None, 'The delay step should be given.'
 
-    if environ.get(environ.JIT_ERROR_CHECK, True):
+    if environ.get(environ.JIT_ERROR_CHECK, False):
       def _check_delay(delay_len):
         raise ValueError(f'The request delay length should be less than the '
                          f'maximum delay {self.max_length}. But we got {delay_len}')
@@ -1263,7 +1263,7 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
     current_time = environ.get(environ.T, desc='The current time.')
     dt = environ.get_dt()
 
-    if environ.get(environ.JIT_ERROR_CHECK, True):
+    if environ.get(environ.JIT_ERROR_CHECK, False):
       def _check_delay(args):
         t_now, t_delay = args
         raise ValueError(f'The request delay time should be within '
