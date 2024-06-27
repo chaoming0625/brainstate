@@ -86,17 +86,16 @@ class TestDelay(unittest.TestCase):
     rotation_delay = bst.Delay(jnp.ones([1]), time=2., delay_method='concat', interp_method='round')
     rotation_delay.init_state()
 
-
     with bst.environ.context(i=0, t=0, jit_error_check=True):
-      # rotation_delay.retrieve_at_time(-2.0)
-      # with self.assertRaises(ValueError):
-      #   rotation_delay.retrieve_at_time(-2.1)
-      # rotation_delay.retrieve_at_time(-2.01)
-      # with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
+      rotation_delay.retrieve_at_time(-2.0)
+      with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
+        rotation_delay.retrieve_at_time(-2.1)
+      rotation_delay.retrieve_at_time(-2.01)
+      with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
         rotation_delay.retrieve_at_time(-2.09)
-      # with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
+      with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
         rotation_delay.retrieve_at_time(0.1)
-      # with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
+      with self.assertRaises(jaxlib.xla_extension.XlaRuntimeError):
         rotation_delay.retrieve_at_time(0.01)
 
   def test_round_interp(self):
