@@ -32,7 +32,7 @@ __all__ = [
   'UpdateReturn',
 
   # types
-  'AllOfTypes',
+  'JointTypes',
   'OneOfTypes',
 
   # behavior modes
@@ -206,7 +206,7 @@ class _JointGenericAlias(_UnionGenericAlias, _root=True):
 
 
 @_SpecialForm
-def AllOfTypes(self, parameters):
+def JointTypes(self, parameters):
   """All of types; AllOfTypes[X, Y] means both X and Y.
 
   To define a union, use e.g. Union[int, str].
@@ -341,7 +341,7 @@ class JointMode(Mode):
     """
     Check whether the mode is exactly the desired mode.
     """
-    return AllOfTypes[tuple(self.types)] == cls
+    return JointTypes[tuple(self.types)] == cls
 
   def __getattr__(self, item):
     """

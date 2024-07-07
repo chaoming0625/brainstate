@@ -22,7 +22,7 @@ from brainstate._module import (register_delay_of_target,
                                 ReceiveInputProj,
                                 ExtendedUpdateWithBA)
 from brainstate._utils import set_module_as
-from brainstate.mixin import (Mode, AllOfTypes, DelayedInitializer, BindCondData, AlignPost, UpdateReturn)
+from brainstate.mixin import (Mode, JointTypes, DelayedInitializer, BindCondData, AlignPost, UpdateReturn)
 from ._utils import is_instance
 
 __all__ = [
@@ -39,7 +39,7 @@ def align_post_add_bef_update(
     out_label: str,
     syn_desc,
     out_desc,
-    post: AllOfTypes[ReceiveInputProj, ExtendedUpdateWithBA],
+    post: JointTypes[ReceiveInputProj, ExtendedUpdateWithBA],
     proj_name: str
 ):
   # synapse and output initialization
@@ -60,7 +60,7 @@ class _AlignPost(Module):
   def __init__(
       self,
       syn: Module,
-      out: AllOfTypes[Dynamics, BindCondData]
+      out: JointTypes[Dynamics, BindCondData]
   ):
     super().__init__()
     self.syn = syn
@@ -140,7 +140,7 @@ class HalfProjAlignPostMg(Projection):
       comm: Module,
       syn: DelayedInitializer[AlignPost],
       out: DelayedInitializer[BindCondData],
-      post: AllOfTypes[ReceiveInputProj, ExtendedUpdateWithBA],
+      post: JointTypes[ReceiveInputProj, ExtendedUpdateWithBA],
       out_label: Optional[str] = None,
       name: Optional[str] = None,
       mode: Optional[Mode] = None,
@@ -150,7 +150,7 @@ class HalfProjAlignPostMg(Projection):
     # synaptic models
     is_instance(syn, DelayedInitializer[AlignPost])
     is_instance(out, DelayedInitializer[BindCondData])
-    is_instance(post, AllOfTypes[ReceiveInputProj, ExtendedUpdateWithBA])
+    is_instance(post, JointTypes[ReceiveInputProj, ExtendedUpdateWithBA])
 
     # synapse and output initialization
     syn, out = align_post_add_bef_update(out_label, syn_desc=syn, out_desc=out, post=post, proj_name=self.name)
@@ -257,12 +257,12 @@ class FullProjAlignPostMg(Projection):
 
   def __init__(
       self,
-      pre: AllOfTypes[ExtendedUpdateWithBA, UpdateReturn],
+      pre: JointTypes[ExtendedUpdateWithBA, UpdateReturn],
       delay: Union[None, int, float],
       comm: Module,
       syn: DelayedInitializer[AlignPost],
       out: DelayedInitializer[BindCondData],
-      post: AllOfTypes[ReceiveInputProj, ExtendedUpdateWithBA],
+      post: JointTypes[ReceiveInputProj, ExtendedUpdateWithBA],
       out_label: Optional[str] = None,
       name: Optional[str] = None,
       mode: Optional[Mode] = None,
@@ -270,11 +270,11 @@ class FullProjAlignPostMg(Projection):
     super().__init__(name=name, mode=mode)
 
     # synaptic models
-    is_instance(pre, AllOfTypes[ExtendedUpdateWithBA, UpdateReturn])
+    is_instance(pre, JointTypes[ExtendedUpdateWithBA, UpdateReturn])
     is_instance(comm, Module)
     is_instance(syn, DelayedInitializer[AlignPost])
     is_instance(out, DelayedInitializer[BindCondData])
-    is_instance(post, AllOfTypes[ReceiveInputProj, ExtendedUpdateWithBA])
+    is_instance(post, JointTypes[ReceiveInputProj, ExtendedUpdateWithBA])
     self.comm = comm
 
     # delay initialization
@@ -494,8 +494,8 @@ class FullProjAlignPost(Projection):
     # synaptic models
     is_instance(pre, UpdateReturn)
     is_instance(comm, Module)
-    is_instance(syn, AllOfTypes[Dynamics, AlignPost])
-    is_instance(out, AllOfTypes[Dynamics, BindCondData])
+    is_instance(syn, JointTypes[Dynamics, AlignPost])
+    is_instance(out, JointTypes[Dynamics, BindCondData])
     is_instance(post, ReceiveInputProj)
     self.comm = comm
     self.syn = syn
