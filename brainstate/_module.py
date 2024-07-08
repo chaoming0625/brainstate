@@ -59,7 +59,7 @@ import numpy as np
 from . import environ
 from ._state import State, StateDictManager, visible_state_dict
 from ._utils import set_module_as
-from .mixin import Mixin, Mode, DelayedInit, AllOfTypes, Batching, UpdateReturn
+from .mixin import Mixin, Mode, DelayedInit, JointTypes, Batching, UpdateReturn
 from .transform import jit_error
 from .util import unique_name, DictManager, get_unique_name
 
@@ -809,7 +809,6 @@ class Dynamics(ExtendedUpdateWithBA, ReceiveInputProj, UpdateReturn):
       keep_size: bool = False,
       name: Optional[str] = None,
       mode: Optional[Mode] = None,
-      method: str = 'exp_auto'
   ):
     # size
     if isinstance(size, (list, tuple)):
@@ -830,9 +829,6 @@ class Dynamics(ExtendedUpdateWithBA, ReceiveInputProj, UpdateReturn):
 
     # number of neurons
     self.num = np.prod(size)
-
-    # integration method
-    self.method = method
 
     # -- Attribute for "InputProjMixIn" -- #
     # each instance of "SupportInputProj" should have
@@ -1414,7 +1410,7 @@ class DelayAccess(Module):
     return self.refs['delay'].at(self._delay_entry, *self.indices)
 
 
-def register_delay_of_target(target: AllOfTypes[ExtendedUpdateWithBA, UpdateReturn]):
+def register_delay_of_target(target: JointTypes[ExtendedUpdateWithBA, UpdateReturn]):
   """Register delay class for the given target.
 
   Args:
@@ -1424,7 +1420,7 @@ def register_delay_of_target(target: AllOfTypes[ExtendedUpdateWithBA, UpdateRetu
     The delay registered for the given target.
   """
   if not target.has_after_update(delay_identifier):
-    assert isinstance(target, AllOfTypes[ExtendedUpdateWithBA, UpdateReturn])
+    assert isinstance(target, JointTypes[ExtendedUpdateWithBA, UpdateReturn])
     target.add_after_update(delay_identifier, Delay(target.update_return_info()))
   delay_cls = target.get_after_update(delay_identifier)
   return delay_cls

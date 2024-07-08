@@ -16,6 +16,7 @@
 
 from typing import Any, Sequence, Protocol, Union
 
+import brainunit as bu
 import jax
 import numpy as np
 
@@ -43,6 +44,7 @@ ArrayLike = Union[
   np.ndarray,  # NumPy array type
   np.bool_, np.number,  # NumPy scalar types
   bool, int, float, complex,  # Python scalar types
+  bu.Quantity,  # quantity
 ]
 
 # --- Dtype --- #

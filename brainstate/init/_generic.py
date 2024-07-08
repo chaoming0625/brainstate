@@ -15,15 +15,15 @@
 
 # -*- coding: utf-8 -*-
 
-import numbers
 from typing import Union, Callable, Optional, Sequence
 
+import brainunit as bu
 import jax
-import jax.numpy as jnp
 import numpy as np
 
 from brainstate._state import State
 from ._base import to_size
+from ..typing import ArrayLike
 
 __all__ = [
   'param',
@@ -33,11 +33,57 @@ __all__ = [
 
 
 def _is_scalar(x):
-  return isinstance(x, numbers.Number)
+  return bu.math.isscalar(x)
+
+
+def are_shapes_broadcastable(shape1, shape2):
+  """
+  Check if two shapes are broadcastable.
+
+  Parameters:
+  - shape1: Tuple[int], the shape of the first array.
+  - shape2: Tuple[int], the shape of the second array.
+
+  Returns:
+  - bool: True if shapes are broadcastable, False otherwise.
+  """
+  # Reverse the shapes to compare from the last dimension
+  shape1_reversed = shape1[::-1]
+  shape2_reversed = shape2[::-1]
+
+  # Iterate over the dimensions of the shorter shape
+  for dim1, dim2 in zip(shape1_reversed, shape2_reversed):
+    # Check if the dimensions are not equal and neither is 1
+    if dim1 != dim2 and 1 not in (dim1, dim2):
+      return False
+
+  # If all dimensions are compatible, the shapes are broadcastable
+  return True
+
+
+def _expand_params_to_match_sizes(params, sizes):
+  """
+  Expand the dimensions of params to match the dimensions of sizes.
+
+  Parameters:
+  - params: jax.Array or np.ndarray, the parameter array to be expanded.
+  - sizes: tuple[int] or list[int], the target shape dimensions.
+
+  Returns:
+  - Expanded params with dimensions matching sizes.
+  """
+  params_dim = params.ndim
+  sizes_dim = len(sizes)
+  dim_diff = sizes_dim - params_dim
+
+  # Add new axes to params if it has fewer dimensions than sizes
+  for _ in range(dim_diff):
+    params = bu.math.expand_dims(params, axis=0)  # Add new axis at the last dimension
+  return params
 
 
 def param(
-    param: Union[Callable, np.ndarray, jax.Array, float, int, bool],
+    parameter: Union[Callable, ArrayLike],
     sizes: Union[int, Sequence[int]],
     batch_size: Optional[int] = None,
     allow_none: bool = True,
@@ -47,7 +93,7 @@ def param(
 
   Parameters
   ----------
-  param: callable, Initializer, bm.ndarray, jnp.ndarray, onp.ndarray, float, int, bool
+  parameter: callable, ArrayLike, State
     The initialization of the parameter.
     - If it is None, the created parameter will be None.
     - If it is a callable function :math:`f`, the ``f(size)`` will be returned.
@@ -71,42 +117,55 @@ def param(
   --------
   noise, state
   """
-  if param is None:
+  # Check if the parameter is None
+  if parameter is None:
     if allow_none:
       return None
     else:
       raise ValueError(f'Expect a parameter with type of float, ArrayType, Initializer, or '
                        f'Callable function, but we got None. ')
-  sizes = list(to_size(sizes))
-  if allow_scalar and _is_scalar(param):
-    return param
 
-  if batch_size is not None:
-    sizes.insert(0, batch_size)
+  # Check if the parameter is a scalar value
+  if allow_scalar and _is_scalar(parameter):
+    return parameter
 
-  if callable(param):
-    return param(sizes)
-  elif isinstance(param, (np.ndarray, jax.Array)):
-    param = jnp.asarray(param)
+  # Convert sizes to a tuple
+  sizes = tuple(to_size(sizes))
+
+  # Check if the parameter is a callable function
+  if callable(parameter):
     if batch_size is not None:
-      param = jnp.repeat(jnp.expand_dims(param, axis=0), batch_size, axis=0)
-  elif isinstance(param, State):
-    param = param
-    if batch_size is not None:
-      param = type(param)(jnp.repeat(jnp.expand_dims(param.value, axis=batch_axis), batch_size, axis=batch_axis))
+      sizes = (batch_size,) + sizes
+    return parameter(sizes)
+  elif isinstance(parameter, (np.ndarray, jax.Array, bu.Quantity, State)):
+    parameter = parameter
   else:
-    raise ValueError(f'Unknown parameter type: {type(param)}')
+    raise ValueError(f'Unknown parameter type: {type(parameter)}')
 
-  if allow_scalar:
-    if param.shape == () or param.shape == (1,):
-      return param
-  if param.shape != tuple(sizes):
-    raise ValueError(f'The shape of the parameters should be {sizes}, but we got {param.shape}')
-  return param
+  # Check if the shape of the parameter matches the given size
+  if not are_shapes_broadcastable(parameter.shape, sizes):
+    raise ValueError(f'The shape of the parameter {parameter.shape} does not match with the given size {sizes}')
+
+  # Expand the parameter to match the given batch size
+  param_value = parameter.value if isinstance(parameter, State) else parameter
+  if batch_size is not None:
+    if param_value.ndim <= len(sizes):
+      # add a new axis to the params so that it matches the dimensionality of the given shape ``sizes``
+      param_value = _expand_params_to_match_sizes(param_value, sizes)
+      param_value = bu.math.repeat(
+        bu.math.expand_dims(param_value, axis=0),
+        batch_size,
+        axis=0
+      )
+    else:
+      if param_value.shape[0] != batch_size:
+        raise ValueError(f'The batch size of the parameter {param_value.shape[0]} '
+                         f'does not match with the given batch size {batch_size}')
+  return type(parameter)(param_value) if isinstance(parameter, State) else param_value
 
 
 def state(
-    init: Union[Callable, np.ndarray, jax.Array],
+    init: Union[Callable, jax.typing.ArrayLike],
     sizes: Union[int, Sequence[int]] = None,
     batch_size: Optional[int] = None,
 ):
@@ -124,18 +183,24 @@ def state(
 
   else:
     if sizes is not None:
-      if jnp.shape(init) != sizes:
-        raise ValueError(f'The shape of "data" {jnp.shape(init)} does not match with "var_shape" {sizes}')
+      if bu.math.shape(init) != sizes:
+        raise ValueError(f'The shape of "data" {bu.math.shape(init)} does not match with "var_shape" {sizes}')
     if isinstance(batch_size, int):
       batch_size = batch_size
-      data = State(jnp.repeat(jnp.expand_dims(init, axis=0), batch_size, axis=0))
+      data = State(
+        bu.math.repeat(
+          bu.math.expand_dims(init, axis=0),
+          batch_size,
+          axis=0
+        )
+      )
     else:
       data = State(init)
   return data
 
 
 def noise(
-    noises: Optional[Union[int, float, np.ndarray, jax.Array, Callable]],
+    noises: Optional[Union[ArrayLike, Callable]],
     size: Union[int, Sequence[int]],
     num_vars: int = 1,
     noise_idx: int = 0,

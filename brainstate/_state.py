@@ -29,7 +29,9 @@ max_int = np.iinfo(np.int32)
 
 __all__ = [
   'State', 'ShortTermState', 'LongTermState', 'ParamState',
-  'StateDictManager', 'visible_state_dict',
+  'StateDictManager',
+  'StateTrace',
+  'visible_state_dict',
   'check_state_value_tree',
 ]
 

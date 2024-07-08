@@ -20,7 +20,7 @@ from brainstate._module import (Module, DelayAccess, Projection,
                                 ExtendedUpdateWithBA, ReceiveInputProj,
                                 register_delay_of_target)
 from brainstate._utils import set_module_as
-from brainstate.mixin import (DelayedInitializer, BindCondData, UpdateReturn, Mode, AllOfTypes)
+from brainstate.mixin import (DelayedInitializer, BindCondData, UpdateReturn, Mode, JointTypes)
 from ._utils import is_instance
 
 __all__ = [
@@ -284,7 +284,7 @@ class FullProjAlignPreDSMg(Projection):
 
   def __init__(
       self,
-      pre: AllOfTypes[ExtendedUpdateWithBA, UpdateReturn],
+      pre: JointTypes[ExtendedUpdateWithBA, UpdateReturn],
       delay: Union[None, int, float],
       syn: DelayedInitializer[UpdateReturn],
       comm: Module,
@@ -297,7 +297,7 @@ class FullProjAlignPreDSMg(Projection):
     super().__init__(name=name, mode=mode)
 
     # synaptic models
-    is_instance(pre, AllOfTypes[ExtendedUpdateWithBA, UpdateReturn])
+    is_instance(pre, JointTypes[ExtendedUpdateWithBA, UpdateReturn])
     is_instance(syn, DelayedInitializer[Module])
     is_instance(comm, Module)
     is_instance(out, BindCondData)
