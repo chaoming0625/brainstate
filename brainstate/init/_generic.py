@@ -83,7 +83,7 @@ def _expand_params_to_match_sizes(params, sizes):
 
 
 def param(
-    parameter: Union[Callable, ArrayLike],
+    parameter: Union[Callable, ArrayLike, State],
     sizes: Union[int, Sequence[int]],
     batch_size: Optional[int] = None,
     allow_none: bool = True,

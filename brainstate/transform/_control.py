@@ -25,7 +25,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from brainstate._utils import set_module_as
-from ._jit_error import jit_error
+from ._jit_error import jit_error, remove_vmap
 from ._make_jaxpr import StatefulFunction, _assign_state_values
 from ._progress_bar import ProgressBar
 
@@ -347,7 +347,7 @@ def _wrap_fun_with_pbar(fun, pbar_runner):
   def new_fun(new_carry, inputs):
     i, old_carry = new_carry
     old_carry, old_outputs = fun(old_carry, inputs)
-    pbar_runner(i)
+    pbar_runner(remove_vmap(i, op='none'))
     return (i + 1, old_carry), old_outputs
 
   return new_fun

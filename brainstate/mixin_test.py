@@ -30,6 +30,8 @@ class TestMixin(unittest.TestCase):
     self.assertTrue(bc.mixin.Training)
 
 
+
+
 class TestMode(unittest.TestCase):
   def test_JointMode(self):
     a = bc.mixin.JointMode(bc.mixin.Batching(), bc.mixin.Training())
