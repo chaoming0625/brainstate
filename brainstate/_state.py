@@ -15,7 +15,7 @@
 
 import contextlib
 import threading
-from typing import Any, Tuple, Dict, List, Callable
+from typing import Any, Tuple, Dict, List, Callable, Optional
 
 import jax
 import numpy as np
@@ -108,9 +108,9 @@ class State(object):
     value: PyTree. It can be anything as a pyTree.
   """
   __module__ = 'brainstate'
-  __slots__ = ('_value', '_tree', '_level', '_source_info', '_check_tree')
+  __slots__ = ('_value', '_name', '_tree', '_level', '_source_info', '_check_tree')
 
-  def __init__(self, value: PyTree):
+  def __init__(self, value: PyTree, name: Optional[str] = None):
     if isinstance(value, State):
       value = value.value
     self._value = value
@@ -118,6 +118,21 @@ class State(object):
     self._check_tree = False
     self._level = len(thread_local_stack.stack)
     self._source_info = source_info_util.current()
+    self._name = name
+
+  @property
+  def name(self) -> Optional[str]:
+    """
+    The name of the state.
+    """
+    return self._name
+
+  @name.setter
+  def name(self, name: str) -> None:
+    """
+    Set the name of the state.
+    """
+    self._name = name
 
   @property
   def value(self) -> PyTree:
