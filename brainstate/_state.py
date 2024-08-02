@@ -22,10 +22,8 @@ import numpy as np
 from jax.api_util import shaped_abstractify
 from jax.extend import source_info_util
 
+from .typing import PyTree
 from .util import DictManager
-
-PyTree = Any
-max_int = np.iinfo(np.int32)
 
 __all__ = [
   'State', 'ShortTermState', 'LongTermState', 'ParamState',
@@ -36,6 +34,7 @@ __all__ = [
 ]
 
 _pytree_registered_objects = set()
+max_int = np.iinfo(np.int32)
 
 
 def _register_pytree_cls(cls):
@@ -225,7 +224,10 @@ class State(object):
     leaves, tree = jax.tree.flatten(self._value)
     leaves_info = [ShapeDtype(leaf.shape, leaf.dtype) for leaf in leaves]
     tree_info = jax.tree.unflatten(tree, leaves_info)
-    return f'{self.__class__.__name__}({tree_info})'
+    if self.name is None:
+      return f'{self.__class__.__name__}({tree_info})'
+    else:
+      return f'{self.__class__.__name__}({self.name}: {tree_info})'
 
 
 class ShapeDtype:

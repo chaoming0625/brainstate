@@ -71,8 +71,8 @@ from jax.util import wraps
 
 from brainstate._state import State, StateTrace
 from brainstate._utils import set_module_as
+from brainstate.typing import PyTree
 
-PyTree = Any
 AxisName = Hashable
 
 __all__ = [

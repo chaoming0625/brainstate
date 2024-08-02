@@ -22,8 +22,8 @@ import jax
 import numpy as np
 
 from brainstate._state import State
+from brainstate.typing import ArrayLike
 from ._base import to_size
-from ..typing import ArrayLike
 
 __all__ = [
   'param',

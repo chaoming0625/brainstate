@@ -25,8 +25,8 @@ from typing import Any, Union, Sequence
 import jax
 import jax.numpy as jnp
 from jax.scipy.special import logsumexp
-from jax.typing import ArrayLike
 
+from brainstate.typing import ArrayLike
 from .. import random
 
 __all__ = [

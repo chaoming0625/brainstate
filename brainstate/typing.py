@@ -14,13 +14,14 @@
 # ==============================================================================
 
 
-from typing import Any, Sequence, Protocol, Union
+from typing import Any, Sequence, Protocol, Union, Generic, TypeVar
 
 import brainunit as bu
 import jax
 import numpy as np
 
 __all__ = [
+  'PyTree',
   'Size',
   'Axes',
   'SeedOrKey',
@@ -28,6 +29,13 @@ __all__ = [
   'DType',
   'DTypeLike',
 ]
+
+T = TypeVar('T')
+
+
+class PyTree(Generic[T]):
+  pass
+
 
 Size = Union[int, Sequence[int]]
 Axes = Union[int, Sequence[int]]
@@ -44,7 +52,7 @@ ArrayLike = Union[
   np.ndarray,  # NumPy array type
   np.bool_, np.number,  # NumPy scalar types
   bool, int, float, complex,  # Python scalar types
-  bu.Quantity,  # quantity
+  bu.Quantity,  # Quantity
 ]
 
 # --- Dtype --- #

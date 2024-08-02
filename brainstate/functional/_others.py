@@ -16,12 +16,11 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Any
 
 import jax
 import jax.numpy as jnp
 
-PyTree = Any
+from brainstate.typing import PyTree
 
 __all__ = [
   'clip_grad_norm',

@@ -15,13 +15,14 @@
 
 # -*- coding: utf-8 -*-
 
-from typing import Sequence, Optional, TypeVar, Any
+from typing import Sequence, Optional, TypeVar
 from typing import (_SpecialForm, _type_check, _remove_dups_flatten, _UnionGenericAlias)
 
-T = TypeVar('T')
-PyTree = Any
+from .typing import PyTree
 
+T = TypeVar('T')
 State = None
+
 
 __all__ = [
   'Mixin',
