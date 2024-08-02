@@ -1167,23 +1167,32 @@ def default_rng(seed_or_key=None, clone: bool = True) -> RandomState:
     return RandomState(seed_or_key)
 
 
-def seed(seed: int = None):
+def seed(seed_or_key: int = None):
   """Sets a new random seed.
 
   Parameters
   ----------
-  seed: int, optional
-    The random seed.
+  seed_or_key: int, optional
+    The random seed (an integer) or jax random key.
   """
   with jax.ensure_compile_time_eval():
-    if seed is None:
-      seed = np.random.randint(0, 100000)
-    np.random.seed(seed)
-  DEFAULT.seed(seed)
+    if seed_or_key is None:
+      seed_or_key = np.random.randint(0, 100000)
+
+  # numpy random seed
+  if np.size(seed_or_key) == 1:  # seed
+    np.random.seed(seed_or_key)
+  elif np.size(seed_or_key) == 2:  # jax random key
+    np.random.seed(seed_or_key[0])
+  else:
+    raise ValueError(f"seed_or_key should be an integer or a tuple of two integers.")
+
+  # jax random seed
+  DEFAULT.seed(seed_or_key)
 
 
 @contextmanager
-def seed_context(seed: int):
+def seed_context(seed_or_key: SeedOrKey):
   """
   A context manager that sets the random seed for the duration of the block.
 
@@ -1206,16 +1215,19 @@ def seed_context(seed: int):
      The context manager does not only set the seed for the AX random state, but also for the numpy random state.
 
   Args:
-    seed: The seed (an integer).
+    seed_or_key: The seed (an integer) or jax random key.
 
-  Returns:
-    The random state.
   """
   old_jrand_key = DEFAULT.value
   old_np_state = np.random.get_state()
   try:
-    np.random.seed(seed)
-    DEFAULT.seed(seed)
+    if np.size(seed_or_key) == 1:  # seed
+      np.random.seed(seed_or_key)
+    elif np.size(seed_or_key) == 2:  # jax random key
+      np.random.seed(seed_or_key[0])
+    else:
+      raise ValueError(f"seed_or_key should be an integer or a tuple of two integers.")
+    DEFAULT.seed(seed_or_key)
     yield
   finally:
     np.random.set_state(old_np_state)
@@ -1223,7 +1235,8 @@ def seed_context(seed: int):
 
 
 def rand(*dn, key: Optional[SeedOrKey] = None, dtype: DTypeLike = None):
-  r"""Random values in a given shape.
+  r"""
+  Random values in a given shape.
 
   .. note::
       This is a convenience function for users porting code from Matlab,
