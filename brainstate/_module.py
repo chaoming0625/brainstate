@@ -61,8 +61,9 @@ from ._state import State, StateDictManager, visible_state_dict
 from ._utils import set_module_as
 from .mixin import Mixin, Mode, DelayedInit, JointTypes, Batching, UpdateReturn
 from .transform import jit_error
-from .typing import PyTree, Size, ArrayLike
+from .typing import Size, ArrayLike, PyTree
 from .util import unique_name, DictManager, get_unique_name
+
 
 delay_identifier = '_*_delay_of_'
 _DELAY_ROTATE = 'rotation'

@@ -22,7 +22,7 @@ import numpy as np
 from jax.api_util import shaped_abstractify
 from jax.extend import source_info_util
 
-from .typing import PyTree
+from .typing import ArrayLike, PyTree
 from .util import DictManager
 
 __all__ = [
@@ -109,7 +109,7 @@ class State(object):
   __module__ = 'brainstate'
   __slots__ = ('_value', '_name', '_tree', '_level', '_source_info', '_check_tree')
 
-  def __init__(self, value: PyTree, name: Optional[str] = None):
+  def __init__(self, value: PyTree[ArrayLike], name: Optional[str] = None):
     if isinstance(value, State):
       value = value.value
     self._value = value
@@ -134,7 +134,7 @@ class State(object):
     self._name = name
 
   @property
-  def value(self) -> PyTree:
+  def value(self) -> PyTree[ArrayLike]:
     """
     The data and its value.
     """
