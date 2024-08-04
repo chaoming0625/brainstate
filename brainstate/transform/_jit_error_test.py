@@ -16,8 +16,8 @@
 import unittest
 
 import jax
-import jaxlib.xla_extension
 import jax.numpy as jnp
+import jaxlib.xla_extension
 
 import brainstate as bst
 

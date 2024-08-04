@@ -1139,13 +1139,13 @@ class Dropout(Module, ElementWiseBlock):
       name: Optional[str] = None
   ) -> None:
     super().__init__(mode=mode, name=name)
-    assert 0. <= prob < 1., f"Dropout probability must be in the range [0, 1). But got {prob}."
+    assert 0. <= prob <= 1., f"Dropout probability must be in the range [0, 1]. But got {prob}."
     self.prob = prob
 
   def __call__(self, x):
     dtype = bu.math.get_dtype(x)
     fit_phase = environ.get('fit', desc='Whether this is a fitting process. Bool.')
-    if fit_phase:
+    if fit_phase and self.prob < 1.:
       keep_mask = random.bernoulli(self.prob, x.shape)
       return jnp.where(keep_mask,
                        jnp.asarray(x / self.prob, dtype=dtype),

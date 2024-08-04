@@ -54,7 +54,7 @@ setup(
   description='A ``State``-based Transformation System for Brain Dynamics Programming.',
   long_description=README,
   long_description_content_type="text/markdown",
-  author='BrainPy Team',
+  author='BDP',
   author_email='chao.brain@qq.com',
   packages=packages,
   python_requires='>=3.9',
@@ -70,9 +70,11 @@ setup(
     'cuda12': ['jaxlib[cuda12_pip]'],
     'tpu': ['jaxlib[tpu]'],
   },
-  keywords=('computational neuroscience, '
-            'brain-inspired computation, '
-            'brain dynamics programming'),
+  keywords=(
+    'computational neuroscience, '
+    'brain-inspired computation, '
+    'brain dynamics programming'
+  ),
   classifiers=[
     'Natural Language :: English',
     'Operating System :: OS Independent',

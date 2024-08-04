@@ -15,13 +15,14 @@
 
 # -*- coding: utf-8 -*-
 
-from typing import Sequence, Optional, TypeVar, Any
+from typing import Sequence, Optional, TypeVar
 from typing import (_SpecialForm, _type_check, _remove_dups_flatten, _UnionGenericAlias)
 
-T = TypeVar('T')
-PyTree = Any
+from .typing import PyTree
 
+T = TypeVar('T')
 State = None
+
 
 __all__ = [
   'Mixin',
@@ -207,7 +208,7 @@ class _JointGenericAlias(_UnionGenericAlias, _root=True):
 
 @_SpecialForm
 def JointTypes(self, parameters):
-  """All of types; AllOfTypes[X, Y] means both X and Y.
+  """Joint types; JointTypes[X, Y] means both X and Y.
 
   To define a union, use e.g. Union[int, str].
 
@@ -216,28 +217,28 @@ def JointTypes(self, parameters):
   - None as an argument is a special case and is replaced by `type(None)`.
   - Unions of unions are flattened, e.g.::
 
-      AllOfTypes[AllOfTypes[int, str], float] == AllOfTypes[int, str, float]
+      JointTypes[JointTypes[int, str], float] == JointTypes[int, str, float]
 
   - Unions of a single argument vanish, e.g.::
 
-      AllOfTypes[int] == int  # The constructor actually returns int
+      JointTypes[int] == int  # The constructor actually returns int
 
   - Redundant arguments are skipped, e.g.::
 
-      AllOfTypes[int, str, int] == AllOfTypes[int, str]
+      JointTypes[int, str, int] == JointTypes[int, str]
 
   - When comparing unions, the argument order is ignored, e.g.::
 
-      AllOfTypes[int, str] == AllOfTypes[str, int]
+      JointTypes[int, str] == JointTypes[str, int]
 
-  - You cannot subclass or instantiate a AllOfTypes.
-  - You can use Optional[X] as a shorthand for AllOfTypes[X, None].
+  - You cannot subclass or instantiate a JointTypes.
+  - You can use Optional[X] as a shorthand for JointTypes[X, None].
   """
   if parameters == ():
     raise TypeError("Cannot take a Joint of no types.")
   if not isinstance(parameters, tuple):
     parameters = (parameters,)
-  msg = "AllOfTypes[arg, ...]: each arg must be a type."
+  msg = "JointTypes[arg, ...]: each arg must be a type."
   parameters = tuple(_type_check(p, msg) for p in parameters)
   parameters = _remove_dups_flatten(parameters)
   if len(parameters) == 1:

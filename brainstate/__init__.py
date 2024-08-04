@@ -17,7 +17,7 @@
 A ``State``-based Transformation System for Brain Dynamics Programming
 """
 
-__version__ = "0.0.1"
+__version__ = "0.0.1.1"
 
 from . import environ
 from . import functional

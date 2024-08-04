@@ -22,8 +22,8 @@ import jax.numpy as jnp
 import numpy as np
 
 from brainstate import environ, random
+from brainstate.typing import ArrayLike
 from ._base import Initializer, to_size
-from ..typing import ArrayLike
 
 __all__ = [
   'Normal',

@@ -22,8 +22,8 @@ import jax
 import numpy as np
 
 from brainstate._state import State
+from brainstate.typing import ArrayLike
 from ._base import to_size
-from ..typing import ArrayLike
 
 __all__ = [
   'param',
@@ -83,7 +83,7 @@ def _expand_params_to_match_sizes(params, sizes):
 
 
 def param(
-    parameter: Union[Callable, ArrayLike],
+    parameter: Union[Callable, ArrayLike, State],
     sizes: Union[int, Sequence[int]],
     batch_size: Optional[int] = None,
     allow_none: bool = True,
