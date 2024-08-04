@@ -14,5 +14,6 @@ API Documentation
    apis/surrogate.rst
    apis/transform.rst
    apis/util.rst
+   apis/typing.rst
    apis/brainstate.nn.rst
    apis/brainstate.functional.rst

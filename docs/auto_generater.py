@@ -447,7 +447,7 @@ def generate_algorithm_docs(path='apis/auto/algorithms/'):
 
 
 def main():
-  os.makedirs('apis/auto/', exist_ok=True)
+  os.makedirs('apis/', exist_ok=True)
 
   # _write_module(module_name='brainstate.surrogate',
   #               filename='apis/auto/surrogate.rst',
@@ -473,13 +473,17 @@ def main():
   #               filename='apis/auto/util.rst',
   #               header='``brainstate.util`` module')
 
-  _write_module(module_name='brainstate.optim',
-                filename='apis/optim.rst',
-                header='``brainstate.optim`` module')
+  # _write_module(module_name='brainstate.typing',
+  #               filename='apis/typing.rst',
+  #               header='``brainstate.typing`` module')
 
-  _write_module(module_name='brainstate.init',
-                filename='apis/init.rst',
-                header='``brainstate.init`` module')
+  # _write_module(module_name='brainstate.optim',
+  #               filename='apis/optim.rst',
+  #               header='``brainstate.optim`` module')
+
+  # _write_module(module_name='brainstate.init',
+  #               filename='apis/init.rst',
+  #               header='``brainstate.init`` module')
 
   # module_and_name = [
   #   ('_state', 'State System'),
@@ -491,35 +495,35 @@ def main():
   #                   submodule_names=[k[0] for k in module_and_name],
   #                   section_names=[k[1] for k in module_and_name])
 
-  module_and_name = [
-    ('_activations', 'Activation Functions'),
-    ('_normalization', 'Normalization Functions'),
-    ('_spikes', 'Spiking Operations'),
-  ]
-  _write_submodules(module_name='brainstate.functional',
-                    filename='apis/brainstate.functional.rst',
-                    header='``brainstate.functional`` module',
-                    submodule_names=[k[0] for k in module_and_name],
-                    section_names=[k[1] for k in module_and_name])
+  # module_and_name = [
+  #   ('_activations', 'Activation Functions'),
+  #   ('_normalization', 'Normalization Functions'),
+  #   ('_spikes', 'Spiking Operations'),
+  # ]
+  # _write_submodules(module_name='brainstate.functional',
+  #                   filename='apis/brainstate.functional.rst',
+  #                   header='``brainstate.functional`` module',
+  #                   submodule_names=[k[0] for k in module_and_name],
+  #                   section_names=[k[1] for k in module_and_name])
 
-  module_and_name = [
-    ('_base', 'Base Classes'),
-    ('_projection', 'Synaptic Projections'),
-    ('_connections', 'Connection Layers'),
-    ('_dynamics', 'Neuronal/Synaptic Dynamics'),
-    ('_rate_rnns', 'Rate RNNs'),
-    ('_readout', 'Readout Layers'),
-    ('_synouts', 'Synaptic Outputs'),
-    ('_elementwise', 'Element-wise Layers'),
-    ('_normalizations', 'Normalization Layers'),
-    ('_poolings', 'Pooling Layers'),
-    ('_others', 'Other Layers'),
-  ]
-  _write_submodules(module_name='brainstate.nn',
-                    filename='apis/brainstate.nn.rst',
-                    header='``brainstate.nn`` module',
-                    submodule_names=[k[0] for k in module_and_name],
-                    section_names=[k[1] for k in module_and_name])
+  # module_and_name = [
+  #   ('_base', 'Base Classes'),
+  #   ('_projection', 'Synaptic Projections'),
+  #   ('_connections', 'Connection Layers'),
+  #   ('_dynamics', 'Neuronal/Synaptic Dynamics'),
+  #   ('_rate_rnns', 'Rate RNNs'),
+  #   ('_readout', 'Readout Layers'),
+  #   ('_synouts', 'Synaptic Outputs'),
+  #   ('_elementwise', 'Element-wise Layers'),
+  #   ('_normalizations', 'Normalization Layers'),
+  #   ('_poolings', 'Pooling Layers'),
+  #   ('_others', 'Other Layers'),
+  # ]
+  # _write_submodules(module_name='brainstate.nn',
+  #                   filename='apis/brainstate.nn.rst',
+  #                   header='``brainstate.nn`` module',
+  #                   submodule_names=[k[0] for k in module_and_name],
+  #                   section_names=[k[1] for k in module_and_name])
 
 
 if __name__ == '__main__':
