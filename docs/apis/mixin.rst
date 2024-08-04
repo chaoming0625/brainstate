@@ -8,8 +8,8 @@
    :toctree: generated/
 
    Mixin
-   Delayed
    DelayedInit
+   DelayedInitializer
    AlignPost
    BindCondData
    UpdateReturn
@@ -17,5 +17,5 @@
    JointMode
    Batching
    Training
-   AllOfTypes
+   JointTypes
    OneOfTypes

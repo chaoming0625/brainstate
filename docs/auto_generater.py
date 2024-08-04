@@ -447,7 +447,7 @@ def generate_algorithm_docs(path='apis/auto/algorithms/'):
 
 
 def main():
-  os.makedirs('apis/', exist_ok=True)
+  os.makedirs('apis/auto/', exist_ok=True)
 
   # _write_module(module_name='brainstate.surrogate',
   #               filename='apis/auto/surrogate.rst',
@@ -481,9 +481,9 @@ def main():
   #               filename='apis/optim.rst',
   #               header='``brainstate.optim`` module')
 
-  # _write_module(module_name='brainstate.init',
-  #               filename='apis/init.rst',
-  #               header='``brainstate.init`` module')
+  _write_module(module_name='brainstate.init',
+                filename='apis/auto/init.rst',
+                header='``brainstate.init`` module')
 
   # module_and_name = [
   #   ('_state', 'State System'),

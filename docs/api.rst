@@ -7,7 +7,6 @@ API Documentation
    apis/changelog.md
    apis/brainstate.rst
    apis/init.rst
-   apis/math.rst
    apis/mixin.rst
    apis/optim.rst
    apis/random.rst

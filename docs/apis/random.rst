@@ -25,6 +25,7 @@ Random Helper Functions
    :template: classtemplate.rst
 
    seed
+   seed_context
    default_rng
    split_key
    split_keys

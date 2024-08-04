@@ -4,6 +4,11 @@
 .. currentmodule:: brainstate.init 
 .. automodule:: brainstate.init 
 
+
+
+Helper Functions
+----------------
+
 .. autosummary::
    :toctree: generated/
 
@@ -11,6 +16,15 @@
    state
    noise
    to_size
+
+Initialization Classes
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+   :nosignatures:
+   :template: classtemplate.rst
+
    Initializer
    ZeroInit
    Constant
