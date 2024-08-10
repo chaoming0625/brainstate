@@ -30,13 +30,14 @@ def uniform_for_unit(
     maxval: ArrayLike = 1.
 ) -> jax.Array | bu.Quantity:
   if isinstance(minval, bu.Quantity) and isinstance(maxval, bu.Quantity):
-    return bu.Quantity(jr.uniform(key, shape, dtype, minval.value, maxval.value), dim=minval.dim)
+    maxval = maxval.in_unit(minval.unit)
+    return bu.Quantity(jr.uniform(key, shape, dtype, minval.mantissa, maxval.mantissa), unit=minval.unit)
   elif isinstance(minval, bu.Quantity):
     assert minval.is_unitless, f'minval must be unitless when maxval is not a Quantity, got {minval}'
-    minval = minval.value
+    minval = minval.mantissa
   elif isinstance(maxval, bu.Quantity):
     assert maxval.is_unitless, f'maxval must be unitless when minval is not a Quantity, got {maxval}'
-    maxval = maxval.value
+    maxval = maxval.mantissa
   return jr.uniform(key, shape, dtype, minval, maxval)
 
 
@@ -47,5 +48,5 @@ def permutation_for_unit(
     independent: bool = False
 ) -> jax.Array | bu.Quantity:
   if isinstance(x, bu.Quantity):
-    return bu.Quantity(jr.permutation(key, x.value, axis, independent=independent), dim=x.dim)
+    return bu.Quantity(jr.permutation(key, x.mantissa, axis, independent=independent), unit=x.unit)
   return jr.permutation(key, x, axis, independent=independent)

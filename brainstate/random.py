@@ -490,14 +490,13 @@ class RandomState(State):
     upper = bu.math.asarray(upper, dtype=dtype)
     loc = bu.math.asarray(loc, dtype=dtype)
     scale = bu.math.asarray(scale, dtype=dtype)
-    bu.fail_for_dimension_mismatch(lower, upper)
-    bu.fail_for_dimension_mismatch(lower, loc)
-    bu.fail_for_dimension_mismatch(lower, scale)
-    dim = lower.dim if isinstance(lower, bu.Quantity) else bu.DIMENSIONLESS
-    lower = lower.value if isinstance(lower, bu.Quantity) else lower
-    upper = upper.value if isinstance(upper, bu.Quantity) else upper
-    loc = loc.value if isinstance(loc, bu.Quantity) else loc
-    scale = scale.value if isinstance(scale, bu.Quantity) else scale
+    unit = bu.get_unit(lower)
+    lower, upper, loc, scale = (
+      lower.mantissa if isinstance(lower, bu.Quantity) else lower,
+      bu.Quantity(upper).in_unit(unit).mantissa,
+      bu.Quantity(loc).in_unit(unit).mantissa,
+      bu.Quantity(scale).in_unit(unit).mantissa
+    )
 
     jit_error(
       bu.math.any(bu.math.logical_or(loc < lower - 2 * scale, loc > upper + 2 * scale)),
@@ -535,10 +534,12 @@ class RandomState(State):
     out = out * scale * sqrt2 + loc
 
     # Clamp to ensure it's in the proper range
-    out = jnp.clip(out,
-                   lax.nextafter(lax.stop_gradient(lower), np.array(np.inf, dtype=dtype)),
-                   lax.nextafter(lax.stop_gradient(upper), np.array(-np.inf, dtype=dtype)))
-    return out if dim == bu.DIMENSIONLESS else bu.Quantity(out, dim=dim)
+    out = jnp.clip(
+      out,
+      lax.nextafter(lax.stop_gradient(lower), np.array(np.inf, dtype=dtype)),
+      lax.nextafter(lax.stop_gradient(upper), np.array(-np.inf, dtype=dtype))
+    )
+    return out if unit.is_unitless else bu.Quantity(out, unit=unit)
 
   def _check_p(self, p):
     raise ValueError(f'Parameter p should be within [0, 1], but we got {p}')
@@ -555,30 +556,33 @@ class RandomState(State):
     r = jr.bernoulli(key, p=p, shape=_size2shape(size))
     return r
 
-  def lognormal(self,
-                mean=None,
-                sigma=None,
-                size: Optional[Size] = None,
-                key: Optional[SeedOrKey] = None,
-                dtype: DTypeLike = None):
+  def lognormal(
+      self,
+      mean=None,
+      sigma=None,
+      size: Optional[Size] = None,
+      key: Optional[SeedOrKey] = None,
+      dtype: DTypeLike = None
+  ):
     mean = _check_py_seq(mean)
     sigma = _check_py_seq(sigma)
     mean = bu.math.asarray(mean, dtype=dtype)
     sigma = bu.math.asarray(sigma, dtype=dtype)
-    bu.fail_for_dimension_mismatch(mean, sigma)
-    dim = mean.dim if isinstance(mean, bu.Quantity) else bu.DIMENSIONLESS
-    mean = mean.value if isinstance(mean, bu.Quantity) else mean
-    sigma = sigma.value if isinstance(sigma, bu.Quantity) else sigma
+    unit = mean.unit if isinstance(mean, bu.Quantity) else bu.Unit()
+    mean = mean.mantissa if isinstance(mean, bu.Quantity) else mean
+    sigma = sigma.in_unit(unit).mantissa if isinstance(sigma, bu.Quantity) else sigma
 
     if size is None:
-      size = jnp.broadcast_shapes(jnp.shape(mean),
-                                  jnp.shape(sigma))
+      size = jnp.broadcast_shapes(
+        jnp.shape(mean),
+        jnp.shape(sigma)
+      )
     key = self.split_key() if key is None else _formalize_key(key)
     dtype = dtype or environ.dftype()
     samples = jr.normal(key, shape=_size2shape(size), dtype=dtype)
     samples = _loc_scale(mean, sigma, samples)
     samples = jnp.exp(samples)
-    return samples if dim == bu.DIMENSIONLESS else bu.Quantity(samples, dim=dim)
+    return samples if unit.is_unitless else bu.Quantity(samples, unit=unit)
 
   def binomial(self,
                n,
@@ -678,10 +682,10 @@ class RandomState(State):
     cov = bu.math.asarray(_check_py_seq(cov), dtype=dtype)
     if isinstance(mean, bu.Quantity):
       assert isinstance(cov, bu.Quantity)
-      assert mean.dim ** 2 == cov.dim
-    mean = mean.value if isinstance(mean, bu.Quantity) else mean
-    cov = cov.value if isinstance(cov, bu.Quantity) else cov
-    dim = mean.dim if isinstance(mean, bu.Quantity) else bu.DIMENSIONLESS
+      assert mean.unit ** 2 == cov.unit
+    mean = mean.mantissa if isinstance(mean, bu.Quantity) else mean
+    cov = cov.mantissa if isinstance(cov, bu.Quantity) else cov
+    unit = mean.unit if isinstance(mean, bu.Quantity) else bu.Unit()
 
     key = self.split_key() if key is None else _formalize_key(key)
     if not jnp.ndim(mean) >= 1:
@@ -708,7 +712,7 @@ class RandomState(State):
       factor = jnp.linalg.cholesky(cov)
     normal_samples = jr.normal(key, size + mean.shape[-1:], dtype=dtype)
     r = mean + jnp.einsum('...ij,...j->...i', factor, normal_samples)
-    return r if dim == bu.DIMENSIONLESS else bu.Quantity(r, dim=dim)
+    return r if unit.is_unitless else bu.Quantity(r, unit=unit)
 
   def rayleigh(self,
                scale=1.0,
