@@ -60,7 +60,7 @@ from . import environ
 from ._state import State, StateDictManager, visible_state_dict
 from ._utils import set_module_as
 from .mixin import Mixin, Mode, DelayedInit, JointTypes, Batching, UpdateReturn
-from .transform import jit_error
+from .transform import jit_error_if
 from .typing import Size, ArrayLike, PyTree
 from .util import unique_name, DictManager, get_unique_name
 
@@ -1212,7 +1212,7 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
         raise ValueError(f'The request delay length should be less than the '
                          f'maximum delay {self.max_length - 1}. But we got {delay_len}')
 
-      jit_error(delay_step >= self.max_length, _check_delay, delay_step)
+      jit_error_if(delay_step >= self.max_length, _check_delay, delay_step)
 
     # rotation method
     if self.delay_method == _DELAY_ROTATE:
@@ -1263,10 +1263,10 @@ class Delay(ExtendedUpdateWithBA, DelayedInit):
                          f'[{t_now - self.max_time - dt}, {t_now}], '
                          f'but we got {t_delay}')
 
-      jit_error(jnp.logical_or(delay_time > current_time,
-                               delay_time < current_time - self.max_time - dt),
-                _check_delay,
-                current_time, delay_time)
+      jit_error_if(jnp.logical_or(delay_time > current_time,
+                                  delay_time < current_time - self.max_time - dt),
+                   _check_delay,
+                   current_time, delay_time)
 
     diff = current_time - delay_time
     float_time_step = diff / dt

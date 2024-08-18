@@ -25,8 +25,8 @@ from ._loops import *
 from ._loops import __all__ as _loops_all
 from ._jit import *
 from ._jit import __all__ as _jit_all
-from ._jit_error import *
-from ._jit_error import __all__ as _jit_error_all
+from ._error_if import *
+from ._error_if import __all__ as _jit_error_all
 from ._make_jaxpr import *
 from ._make_jaxpr import __all__ as _make_jaxpr_all
 from ._mapping import *

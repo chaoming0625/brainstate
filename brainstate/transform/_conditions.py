@@ -24,7 +24,7 @@ import jax.numpy as jnp
 import numpy as np
 
 from brainstate._utils import set_module_as
-from ._jit_error import jit_error
+from ._error_if import jit_error_if
 from ._make_jaxpr import StatefulFunction, _assign_state_values
 
 __all__ = [
@@ -329,6 +329,6 @@ def ifelse(conditions, branches, *operands, check_cond: bool = True):
   # format index
   conditions = jnp.asarray(conditions, np.int32)
   if check_cond:
-    jit_error(jnp.sum(conditions) != 1, "Only one condition can be True. But got {}.", err_arg=conditions)
+    jit_error_if(jnp.sum(conditions) != 1, "Only one condition can be True. But got {}.", err_arg=conditions)
   index = jnp.where(conditions, size=1, fill_value=len(conditions) - 1)[0][0]
   return switch(index, branches, *operands)

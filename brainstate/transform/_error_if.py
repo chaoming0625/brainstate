@@ -25,7 +25,7 @@ from brainstate._utils import set_module_as
 from ._unvmap import unvmap
 
 __all__ = [
-  'jit_error',
+  'jit_error_if',
 ]
 
 
@@ -46,7 +46,7 @@ def _error_msg(msg, *arg, **kwargs):
 
 
 @set_module_as('brainstate.transform')
-def jit_error(
+def jit_error_if(
     pred,
     error: Union[Callable, str],
     *err_args,
@@ -63,12 +63,12 @@ def jit_error(
   >>> def error(x):
   >>>    raise ValueError(f'error {x}')
   >>> x = jax.random.uniform(jax.random.PRNGKey(0), (10,))
-  >>> jit_error(x.sum() < 5., error, x)
+  >>> jit_error_if(x.sum() < 5., error, x)
 
   Or, it can be a simple string message.
 
   >>> x = jax.random.uniform(jax.random.PRNGKey(0), (10,))
-  >>> jit_error(x.sum() < 5., "Error: the sum is less than 5. Got {s}", s=x.sum())
+  >>> jit_error_if(x.sum() < 5., "Error: the sum is less than 5. Got {s}", s=x.sum())
 
 
   Parameters

@@ -33,7 +33,7 @@ from jax import lax, core, dtypes
 from brainstate import environ
 from ._random_for_unit import uniform_for_unit, permutation_for_unit
 from ._state import State
-from .transform._jit_error import jit_error
+from .transform._error_if import jit_error_if
 from .typing import DTypeLike, Size, SeedOrKey
 
 __all__ = [
@@ -498,7 +498,7 @@ class RandomState(State):
       bu.Quantity(scale).in_unit(unit).mantissa
     )
 
-    jit_error(
+    jit_error_if(
       bu.math.any(bu.math.logical_or(loc < lower - 2 * scale, loc > upper + 2 * scale)),
       "mean is more than 2 std from [lower, upper] in truncated_normal. "
       "The distribution of values may be incorrect."
@@ -549,7 +549,7 @@ class RandomState(State):
                 size: Optional[Size] = None,
                 key: Optional[SeedOrKey] = None):
     p = _check_py_seq(p)
-    jit_error(jnp.any(jnp.logical_and(p < 0, p > 1)), self._check_p, p)
+    jit_error_if(jnp.any(jnp.logical_and(p < 0, p > 1)), self._check_p, p)
     if size is None:
       size = jnp.shape(p)
     key = self.split_key() if key is None else _formalize_key(key)
@@ -592,7 +592,7 @@ class RandomState(State):
                dtype: DTypeLike = None):
     n = _check_py_seq(n)
     p = _check_py_seq(p)
-    jit_error(jnp.any(jnp.logical_and(p < 0, p > 1)), self._check_p, p)
+    jit_error_if(jnp.any(jnp.logical_and(p < 0, p > 1)), self._check_p, p)
     if size is None:
       size = jnp.broadcast_shapes(jnp.shape(n), jnp.shape(p))
     key = self.split_key() if key is None else _formalize_key(key)
@@ -656,7 +656,7 @@ class RandomState(State):
     key = self.split_key() if key is None else _formalize_key(key)
     n = _check_py_seq(n)
     pvals = _check_py_seq(pvals)
-    jit_error(jnp.sum(pvals[:-1]) > 1., self._check_p2, pvals)
+    jit_error_if(jnp.sum(pvals[:-1]) > 1., self._check_p2, pvals)
     if isinstance(n, jax.core.Tracer):
       raise ValueError("The total count parameter `n` should not be a jax abstract array.")
     size = _size2shape(size)
