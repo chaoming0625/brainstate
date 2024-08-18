@@ -22,7 +22,7 @@ from typing import Callable, Union
 import jax
 
 from brainstate._utils import set_module_as
-from ._unvmap import remove_vmap
+from ._unvmap import unvmap
 
 __all__ = [
   'jit_error',
@@ -86,9 +86,9 @@ def jit_error(
     error = partial(_error_msg, error)
 
   jax.lax.cond(
-    remove_vmap(pred, op='any'),
+    unvmap(pred, op='any'),
     partial(_err_jit_true_branch, error),
     _err_jit_false_branch,
-    jax.tree.map(functools.partial(remove_vmap, op='none'), err_args),
-    jax.tree.map(functools.partial(remove_vmap, op='none'), err_kwargs),
+    jax.tree.map(functools.partial(unvmap, op='none'), err_args),
+    jax.tree.map(functools.partial(unvmap, op='none'), err_kwargs),
   )
