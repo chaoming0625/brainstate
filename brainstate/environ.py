@@ -6,7 +6,7 @@ import functools
 import os
 import re
 from collections import defaultdict
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 from jax import config, devices, numpy as jnp
@@ -20,7 +20,7 @@ __all__ = [
   'set_host_device_count', 'set_platform',
   'get_host_device_count', 'get_platform',
   'get_dt', 'get_mode', 'get_mem_scaling', 'get_precision',
-  'tolerance',
+  'tolerance', 'register_default_behavior',
   'dftype', 'ditype', 'dutype', 'dctype',
 ]
 
@@ -31,8 +31,9 @@ JIT_ERROR_CHECK = 'jit_error_check'  # whether to record the current computation
 FIT = 'fit'  # whether to fit the model.
 
 _NOT_PROVIDE = object()
-_environment_defaults = dict()
-_environment_contexts = defaultdict(list)
+_environment_defaults = dict()  # default environment settings
+_environment_contexts = defaultdict(list)  # current environment settings
+_environment_functions = dict()  # environment functions
 
 
 @contextlib.contextmanager
@@ -61,19 +62,34 @@ def context(**kwargs):
   if 'host_device_count' in kwargs:
     raise ValueError('Cannot set host_device_count in environment context. '
                      'Please use set_host_device_count() or set() for the global setting.')
+
   if 'precision' in kwargs:
     last_precision = get_precision()
     _set_jax_precision(kwargs['precision'])
 
   try:
-    # update the current environment
     for k, v in kwargs.items():
+
+      # update the current environment
       _environment_contexts[k].append(v)
+
+      # restore the environment functions
+      if k in _environment_functions:
+        _environment_functions[k](v)
+
     # yield the current all environment information
     yield all()
   finally:
+
     for k, v in kwargs.items():
+
+      # restore the current environment
       _environment_contexts[k].pop()
+
+      # restore the environment functions
+      if k in _environment_functions:
+        _environment_functions[k](get(k))
+
     if 'precision' in kwargs:
       _set_jax_precision(last_precision)
 
@@ -232,7 +248,14 @@ def set(
   if mode is not None:
     assert isinstance(mode, Mode), 'mode must be a Mode instance.'
     kwargs['mode'] = mode
+
+  # set default environment
   _environment_defaults.update(kwargs)
+
+  # update the environment functions
+  for k, v in kwargs.items():
+    if k in _environment_functions:
+      _environment_functions[k](v)
 
 
 def set_host_device_count(n):
@@ -258,6 +281,10 @@ def set_host_device_count(n):
   xla_flags = re.sub(r"--xla_force_host_platform_device_count=\S+", "", xla_flags).split()
   os.environ["XLA_FLAGS"] = " ".join(["--xla_force_host_platform_device_count={}".format(n)] + xla_flags)
 
+  # update the environment functions
+  if 'host_device_count' in _environment_functions:
+    _environment_functions['host_device_count'](n)
+
 
 def set_platform(platform: str):
   """
@@ -266,6 +293,10 @@ def set_platform(platform: str):
   """
   assert platform in ['cpu', 'gpu', 'tpu']
   config.update("jax_platform_name", platform)
+
+  # update the environment functions
+  if 'platform' in _environment_functions:
+    _environment_functions['platform'](platform)
 
 
 def _set_jax_precision(precision: int):
@@ -372,4 +403,22 @@ def tolerance():
     return jnp.array(1e-2, dtype=np.float16)
 
 
+def register_default_behavior(key: str, behavior: Callable, replace_if_exist: bool = False):
+  """
+  Register a default behavior for a specific key.
+
+  Args:
+    key: str. The key to register.
+    behavior: Callable. The behavior to register. It should be a callable.
+    replace_if_exist: bool. Whether to replace the behavior if the key has been registered.
+
+  """
+  assert isinstance(key, str), 'key must be a string.'
+  assert callable(behavior), 'behavior must be a callable.'
+  if not replace_if_exist:
+    assert key not in _environment_functions, f'{key} has been registered.'
+  _environment_functions[key] = behavior
+
+
 set(dt=0.1, precision=32, mode=Mode(), mem_scaling=IdMemScaling())
+

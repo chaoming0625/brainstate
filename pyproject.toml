@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools", "numpy", 'jax', 'jaxlib', 'brainunit']
+requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 
@@ -21,7 +21,7 @@ description = "A State-based Transformation System for Brain Dynamics Programmin
 readme = 'README.md'
 license = { text = 'Apache-2.0 license' }
 requires-python = '>=3.9'
-authors = [{ name = 'BrainPy Team', email = 'chao.brain@qq.com' }]
+authors = [{ name = 'BrainState Developers', email = 'chao.brain@qq.com' }]
 classifiers = [
     'Natural Language :: English',
     'Operating System :: OS Independent',
@@ -42,13 +42,17 @@ classifiers = [
 ]
 
 
-keywords = ["brainpy", "brain simulation", "brain-inspired computing"]
+keywords = [
+    'computational neuroscience',
+    'brain-inspired computation',
+    'brain dynamics programming',
+]
 
 dependencies = [
     'jax',
     'jaxlib',
     'numpy',
-    'brainunit',
+    'brainunit>=0.0.2',
 ]
 
 dynamic = ['version']
