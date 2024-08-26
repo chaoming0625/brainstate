@@ -13,9 +13,9 @@ __all__ = [
 
 @set_module_as('brainstate.transform')
 def unvmap(x, op: str = 'any'):
-  if op == 'any':
+  if op == 'all':
     return unvmap_all(x)
-  elif op == 'all':
+  elif op == 'any':
     return unvmap_any(x)
   elif op == 'none':
     return _without_vmap(x)
