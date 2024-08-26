@@ -6,7 +6,6 @@ import jax.numpy as jnp
 
 from brainstate._utils import set_module_as
 
-
 __all__ = [
   "unvmap",
 ]
@@ -120,7 +119,6 @@ mlir.register_lowering(
 )
 
 
-
 def _without_vmap(x):
   return _no_vmap_prim.bind(x)
 
@@ -143,4 +141,3 @@ _no_vmap_prim.def_impl(_without_vmap_imp)
 _no_vmap_prim.def_abstract_eval(_without_vmap_abs)
 batching.primitive_batchers[_no_vmap_prim] = _without_vmap_batch
 mlir.register_lowering(_no_vmap_prim, mlir.lower_fun(_without_vmap_imp, multiple_results=False))
-

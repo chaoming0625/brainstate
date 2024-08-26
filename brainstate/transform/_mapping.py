@@ -15,7 +15,7 @@
 
 import jax
 
-from ._loops import scan
+from ._loop_collect_return import scan
 
 __all__ = [
   'map',

@@ -21,12 +21,14 @@ from ._autograd import *
 from ._autograd import __all__ as _gradients_all
 from ._conditions import *
 from ._conditions import __all__ as _conditions_all
-from ._loops import *
-from ._loops import __all__ as _loops_all
-from ._jit import *
-from ._jit import __all__ as _jit_all
 from ._error_if import *
 from ._error_if import __all__ as _jit_error_all
+from ._jit import *
+from ._jit import __all__ as _jit_all
+from ._loop_collect_return import *
+from ._loop_collect_return import __all__ as _loops_all
+from ._loop_no_collection import *
+from ._loop_no_collection import __all__ as _loops_no_collection_all
 from ._make_jaxpr import *
 from ._make_jaxpr import __all__ as _make_jaxpr_all
 from ._mapping import *
@@ -35,9 +37,9 @@ from ._progress_bar import *
 from ._progress_bar import __all__ as _progress_bar_all
 
 __all__ = (_gradients_all + _jit_error_all + _conditions_all + _loops_all +
-           _make_jaxpr_all + _jit_all + _progress_bar_all +
+           _make_jaxpr_all + _jit_all + _progress_bar_all + _loops_no_collection_all +
            _mapping_all)
 
 del (_gradients_all, _jit_error_all, _conditions_all, _loops_all,
-     _make_jaxpr_all, _jit_all, _progress_bar_all,
+     _make_jaxpr_all, _jit_all, _progress_bar_all, _loops_no_collection_all,
      _mapping_all)

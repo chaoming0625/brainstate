@@ -16,40 +16,63 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable
 from functools import wraps
-from typing import Any, Optional, TypeVar
+from typing import Callable, Optional, TypeVar, Tuple, Any
 
 import jax
-import jax.lax as lax
 import jax.numpy as jnp
 
 from brainstate._utils import set_module_as
 from ._make_jaxpr import StatefulFunction, _assign_state_values
 from ._progress_bar import ProgressBar
+from ._unvmap import unvmap
 
 X = TypeVar('X')
 Y = TypeVar('Y')
 T = TypeVar('T')
 Carry = TypeVar('Carry')
-BooleanNumeric = Any  # A bool, or a Boolean array.
 
 __all__ = [
-  'scan', 'for_loop', 'while_loop',
-  'bounded_while_loop',
+  # for loop & scan
+  'scan', 'checkpointed_scan',
+  'for_loop', 'checkpointed_for_loop',
 ]
+
+
+def _wrap_fun_with_pbar(fun, pbar_runner):
+  @wraps(fun)
+  def new_fun(new_carry, inputs):
+    i, old_carry = new_carry
+    old_carry, old_outputs = fun(old_carry, inputs)
+    pbar_runner(unvmap(i, op='none'))
+    return (i + 1, old_carry), old_outputs
+
+  return new_fun
+
+
+def _wrapped_scan_fun(stateful_fun: StatefulFunction, states):
+  @wraps(stateful_fun.fun)
+  def wrapped_fun(new_carry, inputs):
+    state_vals, carry = new_carry
+    assert len(states) == len(state_vals)
+    for st, val in zip(states, state_vals):
+      st.value = val
+    carry, out = stateful_fun.jaxpr_call_auto(carry, inputs)
+    return (tuple(st.value for st in states), carry), out
+
+  return wrapped_fun
 
 
 @set_module_as('brainstate.transform')
 def scan(
-    f: Callable[[Carry, X], tuple[Carry, Y]],
+    f: Callable[[Carry, X], Tuple[Carry, Y]],
     init: Carry,
     xs: X,
     length: int | None = None,
     reverse: bool = False,
     unroll: int | bool = 1,
     pbar: ProgressBar | None = None,
-) -> tuple[Carry, Y]:
+) -> Tuple[Carry, Y]:
   """
   Scan a function over leading array axes while carrying along state.
 
@@ -199,6 +222,132 @@ def scan(
   return carry, ys
 
 
+def checkpointed_scan(
+    f: Callable[[Carry, X], Tuple[Carry, Y]],
+    init: Carry,
+    xs: X,
+    length: Optional[int] = None,
+    base: int = 16,
+    pbar: Optional[ProgressBar] = None,
+):
+  """
+  Scan a function over leading array axes while carrying along state.
+  This function is similar to :func:`~scan` but with a checkpointed version.
+
+  Args:
+    f: a Python function to be scanned of type ``c -> a -> (c, b)``, meaning
+      that ``f`` accepts two arguments where the first is a value of the loop
+      carry and the second is a slice of ``xs`` along its leading axis, and that
+      ``f`` returns a pair where the first element represents a new value for
+      the loop carry and the second represents a slice of the output.
+    init: an initial loop carry value of type ``c``, which can be a scalar,
+      array, or any pytree (nested Python tuple/list/dict) thereof, representing
+      the initial loop carry value. This value must have the same structure as
+      the first element of the pair returned by ``f``.
+    xs: the value of type ``[a]`` over which to scan along the leading axis,
+      where ``[a]`` can be an array or any pytree (nested Python
+      tuple/list/dict) thereof with consistent leading axis sizes.
+    length: optional integer specifying the number of loop iterations, which
+      must agree with the sizes of leading axes of the arrays in ``xs`` (but can
+      be used to perform scans where no input ``xs`` are needed).
+    base: optional integer specifying the base for the bounded scan loop.
+    pbar: optional :class:`~.ProgressBar` instance to display the progress
+      of the scan operation.
+
+  Returns:
+    A pair of type ``(c, [b])`` where the first element represents the final
+    loop carry value and the second element represents the stacked outputs of
+    the second output of ``f`` when scanned over the leading axis of the inputs.
+  """
+  # check "f"
+  if not callable(f):
+    raise TypeError("f argument should be a callable.")
+
+  # check "xs"
+  xs_flat, xs_tree = jax.tree.flatten(xs)
+  try:
+    lengths = [x.shape[0] for x in xs_flat]
+  except AttributeError as err:
+    raise ValueError("scan got value with no leading axis to scan over: "
+                     "{}.".format(', '.join(str(x) for x in xs_flat if not hasattr(x, 'shape')))) from err
+  if length is not None:
+    length = int(length)
+    if not all(length == l for l in lengths):
+      raise ValueError(("scan got `length` argument of {} which disagrees with "
+                        "leading axis sizes {}.").format(length, [x.shape[0] for x in xs_flat]))
+  else:
+    unique_lengths = set(lengths)
+    if len(unique_lengths) > 1:
+      msg = "scan got values with different leading axis sizes: {}."
+      raise ValueError(msg.format(', '.join(str(x.shape[0]) for x in xs_flat)))
+    elif len(unique_lengths) == 0:
+      raise ValueError("scan got no values to scan over and `length` not provided.")
+    else:
+      length, = unique_lengths
+
+  # function with progress bar
+  if pbar is not None:
+    pbar_runner = pbar.init(length)
+  else:
+    pbar_runner = None
+
+  # evaluate jaxpr
+  xs_avals = [jax.core.raise_to_shaped(jax.core.get_aval(x)) for x in xs_flat]
+  x_avals = [jax.core.mapped_aval(length, 0, aval) for aval in xs_avals]
+  stateful_fun = StatefulFunction(f).make_jaxpr(init, xs_tree.unflatten(x_avals))
+  all_states = stateful_fun.get_states()
+  out_info = stateful_fun.get_out_shapes()[0]
+
+  # initialize the collected values/dataa
+  assert len(out_info) == 2, "function in checkpointed_scan should return two data: carray and out."
+  data2collection = jax.tree.map(lambda x: jnp.zeros((length,) + x.shape, x.dtype), out_info[1])
+  del out_info
+
+  def wrapped_cond_fun(inp):
+    return inp[-1] < length
+
+  def wrapped_body_fun(inp):
+    (prev_states, carray), prev_collect, i = inp
+    # progress bar
+    if pbar_runner is not None:
+      pbar_runner(unvmap(i, op='none'))
+    # call the function
+    new_states, (new_carray, out4updates) = stateful_fun.jaxpr_call(
+      prev_states, carray, jax.tree.map(lambda x: x[i], xs))
+    # out of bounds
+    pred = i < length
+    new_collect = jax.tree.map(
+      lambda x, update: x.at[i].set(jax.lax.select(pred, update, x[i])),
+      prev_collect,
+      out4updates,
+    )
+    new_states = jax.tree.map(
+      lambda ps, ns: jax.lax.select(pred, ns, ps),
+      prev_states,
+      new_states,
+    )
+    new_carray = jax.tree.map(
+      lambda pc, nc: jax.lax.select(pred, nc, pc),
+      carray,
+      new_carray,
+    )
+    return (new_states, new_carray), new_collect, i + 1
+
+  # while_loop
+  rounded_max_steps = base ** int(math.ceil(math.log(length, base)))
+  (state_vals, carry), data2collection, _ = _bounded_while_loop(
+    wrapped_cond_fun,
+    wrapped_body_fun,
+    ((tuple(st.value for st in all_states), init), data2collection, 0),
+    rounded_max_steps,
+    base,
+    pbar_runner
+  )
+  _assign_state_values(all_states, state_vals)
+  del state_vals, all_states, stateful_fun
+  return carry, data2collection
+
+
 def _forloop_to_scan_fun(f: Callable):
   @wraps(f)
   def scan_fun(carry, x):
@@ -209,7 +358,7 @@ def _forloop_to_scan_fun(f: Callable):
 
 @set_module_as('brainstate.transform')
 def for_loop(
-    f,
+    f: Callable[[X], Y],
     *xs,
     length: Optional[int] = None,
     reverse: bool = False,
@@ -249,162 +398,105 @@ def for_loop(
     when scanned over the leading axis of the inputs.
 
   """
-  _, ys = scan(_forloop_to_scan_fun(f),
-               init=None,
-               xs=xs,
-               length=length,
-               reverse=reverse,
-               unroll=unroll,
-               pbar=pbar)
+  _, ys = scan(
+    _forloop_to_scan_fun(f),
+    init=None,
+    xs=xs,
+    length=length,
+    reverse=reverse,
+    unroll=unroll,
+    pbar=pbar
+  )
   return ys
 
 
-@set_module_as('brainstate.transform')
-def while_loop(
-    cond_fun: Callable[[T], BooleanNumeric],
-    body_fun: Callable[[T], T],
-    init_val: T
-) -> T:
+def checkpointed_for_loop(
+    f: Callable[[X], Y],
+    *xs: X,
+    length: Optional[int] = None,
+    base: int = 16,
+    pbar: Optional[ProgressBar] = None,
+):
   """
-  Call ``body_fun`` repeatedly in a loop while ``cond_fun`` is True.
-
-  The `Haskell-like type signature`_ in brief is
-
-  .. code-block:: haskell
-
-    while_loop :: (a -> Bool) -> (a -> a) -> a -> a
-
-  The semantics of ``while_loop`` are given by this Python implementation::
-
-    def while_loop(cond_fun, body_fun, init_val):
-      val = init_val
-      while cond_fun(val):
-        val = body_fun(val)
-      return val
-
-  Unlike that Python version, ``while_loop`` is a JAX primitive and is lowered
-  to a single WhileOp. That makes it useful for reducing compilation times
-  for jit-compiled functions, since native Python loop constructs in an ``@jit``
-  function are unrolled, leading to large XLA computations.
-
-  Also unlike the Python analogue, the loop-carried value ``val`` must hold a
-  fixed shape and dtype across all iterations (and not just be consistent up to
-  NumPy rank/shape broadcasting and dtype promotion rules, for example). In
-  other words, the type ``a`` in the type signature above represents an array
-  with a fixed shape and dtype (or a nested tuple/list/dict container data
-  structure with a fixed structure and arrays with fixed shape and dtype at the
-  leaves).
-
-  Another difference from using Python-native loop constructs is that
-  ``while_loop`` is not reverse-mode differentiable because XLA computations
-  require static bounds on memory requirements.
+  ``for-loop`` control flow with :py:class:`~.State` with a checkpointed version.
 
   Args:
-    cond_fun: function of type ``a -> Bool``.
-    body_fun: function of type ``a -> a``.
-    init_val: value of type ``a``, a type that can be a scalar, array, or any
-      pytree (nested Python tuple/list/dict) thereof, representing the initial
-      loop carry value.
+    f: a Python function to be scanned of type ``c -> a -> (c, b)``, meaning
+      that ``f`` accepts two arguments where the first is a value of the loop
+      carry and the second is a slice of ``xs`` along its leading axis, and that
+      ``f`` returns a pair where the first element represents a new value for
+      the loop carry and the second represents a slice of the output.
+    xs: the value of type ``[a]`` over which to scan along the leading axis,
+      where ``[a]`` can be an array or any pytree (nested Python
+      tuple/list/dict) thereof with consistent leading axis sizes.
+    length: optional integer specifying the number of loop iterations, which
+      must agree with the sizes of leading axes of the arrays in ``xs`` (but can
+      be used to perform scans where no input ``xs`` are needed).
+    base: optional integer specifying the base for the bounded scan loop.
+    pbar: optional :class:`~.ProgressBar` instance to display the progress
+      of the scan operation.
 
   Returns:
-    The output from the final iteration of body_fun, of type ``a``.
-
-  .. _Haskell-like type signature: https://wiki.haskell.org/Type_signature
+    The return represents the stacked outputs of the second output of ``f``
+    when scanned over the leading axis of the inputs.
   """
-  if not (callable(body_fun) and callable(cond_fun)):
-    raise TypeError("while_loop: body_fun and cond_fun arguments should be callable.")
-  if jax.config.jax_disable_jit:
-    try:
-      val = init_val
-      while cond_fun(val):
-        val = body_fun(val)
-      return val
-    except jax.core.ConcretizationTypeError:
-      # Can't run this while_loop in Python (e.g. because there's a vmap
-      # transformation on it), so we fall back to the primitive version.
-      pass
-
-  # evaluate jaxpr
-  stateful_cond = StatefulFunction(cond_fun).make_jaxpr(init_val)
-  stateful_body = StatefulFunction(body_fun).make_jaxpr(init_val)
-  all_states = tuple(set(stateful_cond.get_states() + stateful_body.get_states()))
-  new_cond_fun = _wrapped_fun(stateful_cond, all_states, return_states=False)
-  new_body_fun = _wrapped_fun(stateful_body, all_states, return_states=True)
-
-  # while_loop
-  state_vals, final_val = jax.lax.while_loop(new_cond_fun,
-                                             new_body_fun,
-                                             (tuple(st.value for st in all_states), init_val))
-  _assign_state_values(all_states, state_vals)
-  return final_val
+  _, ys = checkpointed_scan(
+    _forloop_to_scan_fun(f),
+    init=None,
+    xs=xs,
+    length=length,
+    base=base,
+    pbar=pbar
+  )
+  return ys
 
 
-def _while_loop_to_scan(cond_fun, body_fun, val, max_steps, base):
+# There's several tricks happening here to work around various limitations of JAX.
+# (Also see https://github.com/google/jax/issues/2139#issuecomment-1039293633)
+# 1. `unvmap_any` prior to using `lax.cond`. JAX has a problem in that vmap-of-cond
+#    is converted to a `lax.select`, which executes both branches unconditionally.
+#    Thus writing this naively, using a plain `lax.cond`, will mean the loop always
+#    runs to `max_steps` when executing under vmap. Instead we run (only) until every
+#    batch element has finished.
+# 2. Treating in-place updates specially in the body_fun. Specifically we need to
+#    `lax.select` the update-to-make, not the updated buffer. This is because the
+#    latter instead results in XLA:CPU failing to determine that the buffer can be
+#    updated in-place, and instead it makes a copy. c.f. JAX issue #8192.
+#    This is done through the extra `inplace` argument provided to `body_fun`.
+# 3. The use of the `@jax.checkpoint` decorator. Backpropagation through a
+#    `bounded_while_loop` will otherwise run in θ(max_steps) time, rather than
+#    θ(number of steps actually taken).
+# 4. The use of `base`. In theory `base=2` is optimal at run time, as it implies the
+#    fewest superfluous operations. In practice this implies quite deep recursion in
+#    the construction of the bounded while loop, and this slows down the jaxpr
+#    creation and the XLA compilation. We choose `base=16` as a reasonable-looking
+#    compromise between compilation time and run time.
+
+def _bounded_while_loop(
+    cond_fun: Callable,
+    body_fun: Callable,
+    val: Any,
+    max_steps: int,
+    base: int,
+    pbar_runner: Optional[Callable] = None
+):
   if max_steps == 1:
     return body_fun(val)
   else:
 
-    def call(val_):
-      return _while_loop_to_scan(cond_fun, body_fun, val_, max_steps // base, base)
+    def true_call(val_):
+      return _bounded_while_loop(cond_fun, body_fun, val_, max_steps // base, base, pbar_runner)
+
+    def false_call(val_):
+      if pbar_runner is not None:
+        pbar_runner(unvmap(val_[-1] + max_steps, op='none'))
+      return val_[:-1] + (val_[-1] + max_steps,)
 
     def scan_fn(val_, _):
-      return lax.cond(cond_fun(val_), call, lambda x: x, val_), None
+      return jax.lax.cond(unvmap(cond_fun(val_), op='any'), true_call, false_call, val_), None
 
     # Don't put checkpointing on the lowest level
     if max_steps != base:
       scan_fn = jax.checkpoint(scan_fn, prevent_cse=False)  # pyright: ignore
 
-    return lax.scan(scan_fn, val, xs=None, length=base)[0]
-
-
-def bounded_while_loop(
-    cond_fun: Callable[[T], BooleanNumeric],
-    body_fun: Callable[[T], T],
-    init_val: T,
-    *,
-    max_steps: int,
-    base: int = 16,
-):
-  """
-  While loop with a bound on the maximum number of steps.
-
-  This function is useful when you want to ensure that a while loop terminates
-  even if the condition function is never false. The function is implemented
-  using a scan operation, so it is reverse-mode differentiable.
-
-  Args:
-    cond_fun: A function of type ``a -> Bool``.
-    body_fun: A function of type ``a -> a``.
-    init_val: The initial value of type ``a``.
-    max_steps: A bound on the maximum number of steps, after which the loop
-      terminates unconditionally.
-    base: Run time will increase slightly as `base` increases. Compilation time will
-      decrease substantially as `math.ceil(math.log(max_steps, base))` decreases.
-      (Which happens as `base` increases.)
-
-  Returns:
-    The final value, as if computed by a `lax.while_loop`.
-  """
-
-  # checking
-  if not isinstance(max_steps, int) or max_steps < 0:
-    raise ValueError("max_steps must be a non-negative integer")
-  init_val = jax.tree.map(jnp.array, init_val)
-  if max_steps == 0:
-    return init_val
-
-  # evaluate jaxpr
-  stateful_cond = StatefulFunction(cond_fun).make_jaxpr(init_val)
-  stateful_body = StatefulFunction(body_fun).make_jaxpr(init_val)
-  all_states = tuple(set(stateful_cond.get_states() + stateful_body.get_states()))
-  new_cond_fun = _wrapped_fun(stateful_cond, all_states, return_states=False)
-  new_body_fun = _wrapped_fun(stateful_body, all_states, return_states=True)
-
-  # initial value
-  init_val = (tuple(st.value for st in all_states), init_val)
-
-  # while_loop
-  rounded_max_steps = base ** int(math.ceil(math.log(max_steps, base)))
-  state_vals, val = _while_loop_to_scan(new_cond_fun, new_body_fun, init_val, rounded_max_steps, base)
-  _assign_state_values(all_states, state_vals)
-  return val
+    return jax.lax.scan(scan_fn, val, xs=None, length=base)[0]
