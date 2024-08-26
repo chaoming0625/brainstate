@@ -6,8 +6,8 @@
 
 
 
-Transform Functions
--------------------
+Gradient Transformation
+-----------------------
 
 .. autosummary::
    :toctree: generated/
@@ -18,17 +18,68 @@ Transform Functions
    jacfwd
    jacobian
    hessian
+
+
+Condition Transformations
+-------------------------
+
+.. autosummary::
+   :toctree: generated/
+
    cond
    switch
    ifelse
+
+
+
+For Loop Transformations
+------------------------
+
+
+These transformations collect the results of a loop into a single array.
+
+.. autosummary::
+   :toctree: generated/
+
    scan
+   checkpointed_scan
    for_loop
+   checkpointed_for_loop
+
+
+While Loop Transformations
+--------------------------
+
+.. autosummary::
+   :toctree: generated/
+
    while_loop
+   bounded_while_loop
+
+
+JIT Compilation
+---------------
+
+.. autosummary::
+   :toctree: generated/
+
    jit
 
 
-Transform Tools
----------------
+
+
+Mapping Transformation
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   map
+
+
+
+Transformation Tools
+--------------------
 
 .. autosummary::
    :toctree: generated/
@@ -38,5 +89,6 @@ Transform Tools
    StatefulFunction
    ProgressBar
    make_jaxpr
-   jit_error
+   jit_error_if
+   unvmap
 

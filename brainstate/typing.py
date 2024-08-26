@@ -15,8 +15,9 @@
 
 
 import functools as ft
+import inspect
 import typing
-from typing import Sequence, Protocol, Union, Any, Generic, TypeVar
+from typing import Sequence, Protocol, Union, Any, Generic, TypeVar, Tuple
 
 import brainunit as bu
 import jax
@@ -33,6 +34,59 @@ __all__ = [
 ]
 
 _T = TypeVar("_T")
+
+_Annotation = TypeVar("_Annotation")
+
+
+class _Array(Generic[_Annotation]):
+  pass
+
+
+_Array.__module__ = "builtins"
+
+
+def _item_to_str(item: Union[str, type, slice]) -> str:
+  if isinstance(item, slice):
+    if item.step is not None:
+      raise NotImplementedError
+    return _item_to_str(item.start) + ": " + _item_to_str(item.stop)
+  elif item is ...:
+    return "..."
+  elif inspect.isclass(item):
+    return item.__name__
+  else:
+    return repr(item)
+
+
+def _maybe_tuple_to_str(
+    item: Union[str, type, slice, Tuple[Union[str, type, slice], ...]]
+) -> str:
+  if isinstance(item, tuple):
+    if len(item) == 0:
+      # Explicit brackets
+      return "()"
+    else:
+      # No brackets
+      return ", ".join([_item_to_str(i) for i in item])
+  else:
+    return _item_to_str(item)
+
+
+class Array:
+  def __class_getitem__(cls, item):
+    class X:
+      pass
+
+    X.__module__ = "builtins"
+    X.__qualname__ = _maybe_tuple_to_str(item)
+    return _Array[X]
+
+
+# Same __module__ trick here again. (So that we get the correct display when
+# doing `def f(x: Array)` as well as `def f(x: Array["dim"])`.
+#
+# Don't need to set __qualname__ as that's already correct.
+Array.__module__ = "builtins"
 
 
 class _FakePyTree(Generic[_T]):
