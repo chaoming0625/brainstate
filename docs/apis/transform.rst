@@ -6,8 +6,8 @@
 
 
 
-Gradient Transformations
-------------------------
+Gradient Transformation
+-----------------------
 
 .. autosummary::
    :toctree: generated/
@@ -20,8 +20,8 @@ Gradient Transformations
    hessian
 
 
-Control Flow Transformations
-----------------------------
+Condition Transformations
+-------------------------
 
 .. autosummary::
    :toctree: generated/
@@ -66,8 +66,20 @@ JIT Compilation
    jit
 
 
-Transform Tools
----------------
+
+
+Mapping Transformation
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   map
+
+
+
+Transformation Tools
+--------------------
 
 .. autosummary::
    :toctree: generated/
