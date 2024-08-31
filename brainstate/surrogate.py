@@ -158,6 +158,9 @@ class Sigmoid(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
+
 
 def sigmoid(
     x: jax.Array,
@@ -242,6 +245,9 @@ class PiecewiseQuadratic(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
 
 
 def piecewise_quadratic(
@@ -339,6 +345,9 @@ class PiecewiseExp(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
+
 
 def piecewise_exp(
     x: jax.Array,
@@ -426,6 +435,9 @@ class SoftSign(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
+
 
 def soft_sign(
     x: jax.Array,
@@ -508,6 +520,9 @@ class Arctan(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
+
 
 def arctan(
     x: jax.Array,
@@ -588,6 +603,9 @@ class NonzeroSignLog(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
 
 
 def nonzero_sign_log(
@@ -682,6 +700,9 @@ class ERF(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
 
 
 def erf(
@@ -779,6 +800,9 @@ class PiecewiseLeakyRelu(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(c={self.c}, w={self.w})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.c, self.w))
 
 
 def piecewise_leaky_relu(
@@ -898,6 +922,9 @@ class SquarewaveFourierSeries(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(n={self.n}, t_period={self.t_period})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.n, self.t_period))
+
 
 def squarewave_fourier_series(
     x: jax.Array,
@@ -987,6 +1014,9 @@ class S2NN(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha}, beta={self.beta}, epsilon={self.epsilon})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.alpha, self.beta, self.epsilon))
 
 
 def s2nn(
@@ -1089,6 +1119,9 @@ class QPseudoSpike(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
+
 
 def q_pseudo_spike(
     x: jax.Array,
@@ -1177,6 +1210,9 @@ class LeakyRelu(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha}, beta={self.beta})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.alpha, self.beta))
 
 
 def leaky_relu(
@@ -1277,6 +1313,9 @@ class LogTailedRelu(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
+
 
 def log_tailed_relu(
     x: jax.Array,
@@ -1368,6 +1407,9 @@ class ReluGrad(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha}, width={self.width})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha, self.width))
+
 
 def relu_grad(
     x: jax.Array,
@@ -1445,6 +1487,9 @@ class GaussianGrad(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha}, sigma={self.sigma})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.alpha, self.sigma))
 
 
 def gaussian_grad(
@@ -1529,6 +1574,9 @@ class MultiGaussianGrad(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(h={self.h}, s={self.s}, sigma={self.sigma}, scale={self.scale})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.h, self.s, self.sigma, self.scale))
 
 
 def multi_gaussian_grad(
@@ -1615,6 +1663,9 @@ class InvSquareGrad(Surrogate):
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
 
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
+
 
 def inv_square_grad(
     x: jax.Array,
@@ -1684,6 +1735,9 @@ class SlayerGrad(Surrogate):
 
   def __repr__(self):
     return f'{self.__class__.__name__}(alpha={self.alpha})'
+
+  def __hash__(self):
+    return hash((self.__class__, self.alpha))
 
 
 def slayer_grad(

@@ -35,16 +35,9 @@ pip install brainstate --upgrade
 The official documentation is hosted on Read the Docs: [https://brainstate.readthedocs.io/](https://brainstate.readthedocs.io/)
 
 
+
 ## See also the BDP ecosystem
 
-- [``brainstate``](https://github.com/brainpy/brainstate): A ``State``-based transformation system for brain dynamics programming.
-
-- [``brainunit``](https://github.com/brainpy/brainunit): The unit system for brain dynamics programming.
-
-- [``braintaichi``](https://github.com/brainpy/braintaichi): Leveraging Taichi Lang to customize brain dynamics operators.
-
-- [``brainscale``](https://github.com/brainpy/brainscale): The scalable online learning framework for biological neural networks.
-
-- [``braintools``](https://github.com/brainpy/braintools): The toolbox for the brain dynamics simulation, training and analysis.
+We are building the BDP ecosystem: https://ecosystem-for-brain-dynamics.readthedocs.io/
 
 

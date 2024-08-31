@@ -418,7 +418,7 @@ def checkpointed_for_loop(
     pbar: Optional[ProgressBar] = None,
 ):
   """
-  ``for-loop`` control flow with :py:class:`~.State` with a checkpointed version.
+  ``for-loop`` control flow with :py:class:`~.State` with a checkpointed version, similar to :py:func:`for_loop`.
 
   Args:
     f: a Python function to be scanned of type ``c -> a -> (c, b)``, meaning

@@ -35,7 +35,6 @@ Installation
 
           pip install -U brainstate[tpu] -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 
-
 ----
 
 
@@ -43,15 +42,7 @@ See also the BDP ecosystem
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-- `brainstate <https://github.com/brainpy/brainstate>`_: A ``State``-based transformation system for brain dynamics programming.
-
-- `brainunit <https://github.com/brainpy/brainunit>`_: The unit system for brain dynamics programming.
-
-- `braintaichi <https://github.com/brainpy/braintaichi>`_: Leveraging Taichi Lang to customize brain dynamics operators.
-
-- `brainscale <https://github.com/brainpy/brainscale>`_: The scalable online learning framework for biological neural networks.
-
-- `braintools <https://github.com/brainpy/braintools>`_: The toolbox for the brain dynamics simulation, training and analysis.
+We are building the `BDP ecosystem <https://ecosystem-for-brain-dynamics.readthedocs.io/>`_:
 
 
 
