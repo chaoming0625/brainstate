@@ -1597,6 +1597,6 @@ def _get_delay(delay_time, delay_step):
       delay_time = delay_step * environ.get_dt()
   else:
     assert delay_step is None, '"delay_step" should be None if "delay_time" is given.'
-    assert isinstance(delay_time, (int, float))
+    # assert isinstance(delay_time, (int, float))
     delay_step = math.ceil(delay_time / environ.get_dt())
   return delay_time, delay_step
