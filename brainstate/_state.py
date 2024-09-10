@@ -234,6 +234,8 @@ class ShapeDtype:
   def __init__(self, shape, dtype):
     self.shape = shape
     self.dtype = dtype
+    self.ndim = len(shape)
+    self.size = np.prod(shape)
 
   def __repr__(self):
     return f'{self.dtype}{list(self.shape)}'

@@ -15,6 +15,8 @@
 
 from typing import Optional, Union
 
+
+import brainunit as u
 from brainstate._module import (register_delay_of_target,
                                 Projection,
                                 Module,
@@ -278,11 +280,19 @@ class FullProjAlignPostMg(Projection):
     self.comm = comm
 
     # delay initialization
-    if delay is not None and delay > 0.:
-      delay_cls = register_delay_of_target(pre)
-      delay_cls.register_entry(self.name, delay)
-      self.delay = delay_cls
-      self.has_delay = True
+    if delay is not None:
+      if isinstance(delay, u.Quantity):
+        has_delay = delay.mantissa > 0.
+      else:
+        has_delay = delay > 0.
+      if has_delay:
+        delay_cls = register_delay_of_target(pre)
+        delay_cls.register_entry(self.name, delay)
+        self.delay = delay_cls
+        self.has_delay = True
+      else:
+        self.delay = None
+        self.has_delay = False
     else:
       self.delay = None
       self.has_delay = False
@@ -502,11 +512,19 @@ class FullProjAlignPost(Projection):
     self.out = out
 
     # delay initialization
-    if delay is not None and delay > 0.:
-      delay_cls = register_delay_of_target(pre)
-      delay_cls.register_entry(self.name, delay)
-      self.delay = delay_cls
-      self.has_delay = True
+    if delay is not None:
+      if isinstance(delay, u.Quantity):
+        has_delay = delay.mantissa > 0.
+      else:
+        has_delay = delay > 0.
+      if has_delay:
+        delay_cls = register_delay_of_target(pre)
+        delay_cls.register_entry(self.name, delay)
+        self.delay = delay_cls
+        self.has_delay = True
+      else:
+        self.delay = None
+        self.has_delay = False
     else:
       self.delay = None
       self.has_delay = False
