@@ -46,6 +46,25 @@ class TestJIT(unittest.TestCase):
     key = fun1.stateful_fun.get_arg_cache_key(x)
     self.assertTrue(len(fun1.stateful_fun.get_states(key)) == 2)
 
+  def test_kwargs(self):
+    a = bc.State(bc.random.randn(10))
+
+    @bc.transform.jit
+    def fun1(inp):
+      a.value += inp
+
+      b = bc.State(bc.random.randn(1))
+
+      def inner_fun(x):
+        b.value += x
+
+      bc.transform.for_loop(inner_fun, bc.random.randn(100))
+
+      return a.value + b.value
+
+    # test kwargs
+    print(fun1(inp=bc.random.randn(10)))
+
   def test_jit_compile_sensitive_to_input_shape(self):
     global_data = [0]
 

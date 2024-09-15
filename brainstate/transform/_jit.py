@@ -76,7 +76,7 @@ def _get_jitted_fun(
   def jitted_fun(*args, **params):
     if jax.config.jax_disable_jit:
       return fun.fun(*args, **params)
-    states = fun.compile_and_get_states_by_static_args(*args, **kwargs)
+    states = fun.compile_and_get_states_by_static_args(*args, **params)
     state_vals, outs = jit_fun([st.value for st in states], *args, **params)
     _assign_state_values(states, state_vals)
     return outs
