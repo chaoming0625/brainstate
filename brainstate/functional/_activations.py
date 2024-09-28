@@ -26,8 +26,8 @@ import brainunit as u
 import jax
 from jax.scipy.special import logsumexp
 
-from brainstate.typing import ArrayLike
 from .. import random
+from ..typing import ArrayLike
 
 __all__ = [
   "tanh",
@@ -67,7 +67,7 @@ __all__ = [
 ]
 
 
-def tanh(x: ArrayLike) -> jax.Array:
+def tanh(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Hyperbolic tangent activation function.
 
   Computes the element-wise function:
@@ -254,7 +254,7 @@ def _keep_unit(fun, x, **kwargs):
   return x if unit.is_unitless else u.Quantity(x, unit=unit)
 
 
-def relu(x: ArrayLike) -> jax.Array:
+def relu(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Rectified linear unit activation function.
 
   Computes the element-wise function:
@@ -288,7 +288,7 @@ def relu(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.relu, x)
 
 
-def squareplus(x: ArrayLike, b: ArrayLike = 4) -> jax.Array:
+def squareplus(x: ArrayLike, b: ArrayLike = 4) -> Union[jax.Array, u.Quantity]:
   r"""Squareplus activation function.
 
   Computes the element-wise function
@@ -305,7 +305,7 @@ def squareplus(x: ArrayLike, b: ArrayLike = 4) -> jax.Array:
   return _keep_unit(jax.nn.squareplus, x, b=b)
 
 
-def softplus(x: ArrayLike) -> jax.Array:
+def softplus(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Softplus activation function.
 
   Computes the element-wise function
@@ -319,7 +319,7 @@ def softplus(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.softplus, x)
 
 
-def soft_sign(x: ArrayLike) -> jax.Array:
+def soft_sign(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Soft-sign activation function.
 
   Computes the element-wise function
@@ -333,7 +333,7 @@ def soft_sign(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.soft_sign, x)
 
 
-def sigmoid(x: ArrayLike) -> jax.Array:
+def sigmoid(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Sigmoid activation function.
 
   Computes the element-wise function:
@@ -354,7 +354,7 @@ def sigmoid(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.sigmoid, x)
 
 
-def silu(x: ArrayLike) -> jax.Array:
+def silu(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""SiLU (a.k.a. swish) activation function.
 
   Computes the element-wise function:
@@ -379,7 +379,7 @@ def silu(x: ArrayLike) -> jax.Array:
 swish = silu
 
 
-def log_sigmoid(x: ArrayLike) -> jax.Array:
+def log_sigmoid(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Log-sigmoid activation function.
 
   Computes the element-wise function:
@@ -399,7 +399,7 @@ def log_sigmoid(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.log_sigmoid, x)
 
 
-def elu(x: ArrayLike, alpha: ArrayLike = 1.0) -> jax.Array:
+def elu(x: ArrayLike, alpha: ArrayLike = 1.0) -> Union[jax.Array, u.Quantity]:
   r"""Exponential linear unit activation function.
 
   Computes the element-wise function:
@@ -423,7 +423,7 @@ def elu(x: ArrayLike, alpha: ArrayLike = 1.0) -> jax.Array:
   return _keep_unit(jax.nn.elu, x)
 
 
-def leaky_relu(x: ArrayLike, negative_slope: ArrayLike = 1e-2) -> jax.Array:
+def leaky_relu(x: ArrayLike, negative_slope: ArrayLike = 1e-2) -> Union[jax.Array, u.Quantity]:
   r"""Leaky rectified linear unit activation function.
 
   Computes the element-wise function:
@@ -449,7 +449,7 @@ def leaky_relu(x: ArrayLike, negative_slope: ArrayLike = 1e-2) -> jax.Array:
   return _keep_unit(jax.nn.leaky_relu, x, negative_slope=negative_slope)
 
 
-def hard_tanh(x: ArrayLike) -> jax.Array:
+def hard_tanh(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Hard :math:`\mathrm{tanh}` activation function.
 
   Computes the element-wise function:
@@ -470,7 +470,7 @@ def hard_tanh(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.hard_tanh, x)
 
 
-def celu(x: ArrayLike, alpha: ArrayLike = 1.0) -> jax.Array:
+def celu(x: ArrayLike, alpha: ArrayLike = 1.0) -> Union[jax.Array, u.Quantity]:
   r"""Continuously-differentiable exponential linear unit activation.
 
   Computes the element-wise function:
@@ -495,7 +495,7 @@ def celu(x: ArrayLike, alpha: ArrayLike = 1.0) -> jax.Array:
   return _keep_unit(jax.nn.celu, x, alpha=alpha)
 
 
-def selu(x: ArrayLike) -> jax.Array:
+def selu(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Scaled exponential linear unit activation.
 
   Computes the element-wise function:
@@ -525,7 +525,7 @@ def selu(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.selu, x)
 
 
-def gelu(x: ArrayLike, approximate: bool = True) -> jax.Array:
+def gelu(x: ArrayLike, approximate: bool = True) -> Union[jax.Array, u.Quantity]:
   r"""Gaussian error linear unit activation function.
 
   If ``approximate=False``, computes the element-wise function:
@@ -550,7 +550,7 @@ def gelu(x: ArrayLike, approximate: bool = True) -> jax.Array:
   return _keep_unit(jax.nn.gelu, x, approximate=approximate)
 
 
-def glu(x: ArrayLike, axis: int = -1) -> jax.Array:
+def glu(x: ArrayLike, axis: int = -1) -> Union[jax.Array, u.Quantity]:
   r"""Gated linear unit activation function.
 
   Computes the function:
@@ -579,7 +579,7 @@ def glu(x: ArrayLike, axis: int = -1) -> jax.Array:
 def log_softmax(x: ArrayLike,
                 axis: int | tuple[int, ...] | None = -1,
                 where: ArrayLike | None = None,
-                initial: ArrayLike | None = None) -> jax.Array:
+                initial: ArrayLike | None = None) -> Union[jax.Array, u.Quantity]:
   r"""Log-Softmax function.
 
   Computes the logarithm of the :code:`softmax` function, which rescales
@@ -611,7 +611,7 @@ def log_softmax(x: ArrayLike,
 def softmax(x: ArrayLike,
             axis: int | tuple[int, ...] | None = -1,
             where: ArrayLike | None = None,
-            initial: ArrayLike | None = None) -> jax.Array:
+            initial: ArrayLike | None = None) -> Union[jax.Array, u.Quantity]:
   r"""Softmax function.
 
   Computes the function which rescales elements to the range :math:`[0, 1]`
@@ -644,7 +644,7 @@ def standardize(x: ArrayLike,
                 axis: int | tuple[int, ...] | None = -1,
                 variance: ArrayLike | None = None,
                 epsilon: ArrayLike = 1e-5,
-                where: ArrayLike | None = None) -> jax.Array:
+                where: ArrayLike | None = None) -> Union[jax.Array, u.Quantity]:
   r"""Normalizes an array by subtracting ``mean`` and dividing by :math:`\sqrt{\mathrm{variance}}`."""
   return _keep_unit(jax.nn.standardize, x, axis=axis, where=where, variance=variance, epsilon=epsilon)
 
@@ -652,7 +652,7 @@ def standardize(x: ArrayLike,
 def one_hot(x: Any,
             num_classes: int, *,
             dtype: Any = jax.numpy.float_,
-            axis: Union[int, Sequence[int]] = -1) -> jax.Array:
+            axis: Union[int, Sequence[int]] = -1) -> Union[jax.Array, u.Quantity]:
   """One-hot encodes the given indices.
 
   Each index in the input ``x`` is encoded as a vector of zeros of length
@@ -679,7 +679,7 @@ def one_hot(x: Any,
   return _keep_unit(jax.nn.one_hot, x, axis=axis, num_classes=num_classes, dtype=dtype)
 
 
-def relu6(x: ArrayLike) -> jax.Array:
+def relu6(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Rectified Linear Unit 6 activation function.
 
   Computes the element-wise function
@@ -709,7 +709,7 @@ def relu6(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.relu6, x)
 
 
-def hard_sigmoid(x: ArrayLike) -> jax.Array:
+def hard_sigmoid(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Hard Sigmoid activation function.
 
   Computes the element-wise function
@@ -729,7 +729,7 @@ def hard_sigmoid(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.hard_sigmoid, x)
 
 
-def hard_silu(x: ArrayLike) -> jax.Array:
+def hard_silu(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Hard SiLU (swish) activation function
 
   Computes the element-wise function
@@ -757,7 +757,7 @@ def hard_silu(x: ArrayLike) -> jax.Array:
 hard_swish = hard_silu
 
 
-def sparse_plus(x: ArrayLike) -> jax.Array:
+def sparse_plus(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Sparse plus function.
 
   Computes the function:
@@ -781,7 +781,7 @@ def sparse_plus(x: ArrayLike) -> jax.Array:
   return _keep_unit(jax.nn.sparse_plus, x)
 
 
-def sparse_sigmoid(x: ArrayLike) -> jax.Array:
+def sparse_sigmoid(x: ArrayLike) -> Union[jax.Array, u.Quantity]:
   r"""Sparse sigmoid activation function.
 
   Computes the function:
