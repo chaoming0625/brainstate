@@ -20,8 +20,8 @@ from typing import Optional, Union
 import brainunit as u
 import jax
 
-from .._utils import set_module_as
-from ..typing import ArrayLike
+from brainstate._utils import set_module_as
+from brainstate.typing import ArrayLike
 
 __all__ = [
   'weight_standardization',

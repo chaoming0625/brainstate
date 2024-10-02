@@ -26,8 +26,8 @@ import brainunit as u
 import jax
 from jax.scipy.special import logsumexp
 
-from .. import random
-from ..typing import ArrayLike
+from brainstate import random
+from brainstate.typing import ArrayLike
 
 __all__ = [
   "tanh",

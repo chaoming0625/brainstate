@@ -24,6 +24,7 @@ import numpy as np
 from brainstate._state import State
 from brainstate.typing import ArrayLike
 from ._base import to_size
+from brainstate.mixin import Mode
 
 __all__ = [
   'param',
@@ -36,7 +37,7 @@ def _is_scalar(x):
   return bu.math.isscalar(x)
 
 
-def are_shapes_broadcastable(shape1, shape2):
+def are_broadcastable_shapes(shape1, shape2):
   """
   Check if two shapes are broadcastable.
 
@@ -88,6 +89,7 @@ def param(
     batch_size: Optional[int] = None,
     allow_none: bool = True,
     allow_scalar: bool = True,
+    mode: Mode = None,
 ):
   """Initialize parameters.
 
@@ -143,7 +145,7 @@ def param(
     raise ValueError(f'Unknown parameter type: {type(parameter)}')
 
   # Check if the shape of the parameter matches the given size
-  if not are_shapes_broadcastable(parameter.shape, sizes):
+  if not are_broadcastable_shapes(parameter.shape, sizes):
     raise ValueError(f'The shape of the parameter {parameter.shape} does not match with the given size {sizes}')
 
   # Expand the parameter to match the given batch size
