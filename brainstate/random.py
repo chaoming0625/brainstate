@@ -31,10 +31,10 @@ from jax import jit, vmap
 from jax import lax, core, dtypes
 
 from brainstate import environ
-from ._random_for_unit import uniform_for_unit, permutation_for_unit
-from ._state import State
-from .transform._error_if import jit_error_if
-from .typing import DTypeLike, Size, SeedOrKey
+from brainstate._random_for_unit import uniform_for_unit, permutation_for_unit
+from brainstate._state import State
+from brainstate.transform._error_if import jit_error_if
+from brainstate.typing import DTypeLike, Size, SeedOrKey
 
 __all__ = [
   'RandomState', 'DEFAULT',
@@ -108,9 +108,10 @@ class RandomState(State):
       It can be an integer for initial seed of the random number generator,
       or it can be a JAX's PRNKey, which is an array with two elements and `uint32` dtype.
     """
-    if seed_or_key is None:
-      seed_or_key = np.random.randint(0, 100000, 2, dtype=np.uint32)
-    if isinstance(seed_or_key, int):
+    with jax.ensure_compile_time_eval():
+      if seed_or_key is None:
+        seed_or_key = np.random.randint(0, 100000, 2, dtype=np.uint32)
+    if np.size(seed_or_key) == 1:
       key = jr.PRNGKey(seed_or_key)
     else:
       if len(seed_or_key) != 2 and seed_or_key.dtype != np.uint32:
@@ -1171,7 +1172,7 @@ def default_rng(seed_or_key=None, clone: bool = True) -> RandomState:
     return RandomState(seed_or_key)
 
 
-def seed(seed_or_key: int = None):
+def seed(seed_or_key: SeedOrKey = None):
   """Sets a new random seed.
 
   Parameters
@@ -1180,16 +1181,22 @@ def seed(seed_or_key: int = None):
     The random seed (an integer) or jax random key.
   """
   with jax.ensure_compile_time_eval():
+    _set_numpy_seed = True
     if seed_or_key is None:
       seed_or_key = np.random.randint(0, 100000)
+      _set_numpy_seed = False
 
-  # numpy random seed
-  if np.size(seed_or_key) == 1:  # seed
-    np.random.seed(seed_or_key)
-  elif np.size(seed_or_key) == 2:  # jax random key
-    np.random.seed(seed_or_key[0])
-  else:
-    raise ValueError(f"seed_or_key should be an integer or a tuple of two integers.")
+    # numpy random seed
+    if _set_numpy_seed:
+      try:
+        if np.size(seed_or_key) == 1:  # seed
+          np.random.seed(seed_or_key)
+        elif np.size(seed_or_key) == 2:  # jax random key
+          np.random.seed(seed_or_key[0])
+        else:
+          raise ValueError(f"seed_or_key should be an integer or a tuple of two integers.")
+      except jax.errors.TracerArrayConversionError:
+        pass
 
   # jax random seed
   DEFAULT.seed(seed_or_key)
@@ -1225,15 +1232,22 @@ def seed_context(seed_or_key: SeedOrKey):
   old_jrand_key = DEFAULT.value
   old_np_state = np.random.get_state()
   try:
-    if np.size(seed_or_key) == 1:  # seed
-      np.random.seed(seed_or_key)
-    elif np.size(seed_or_key) == 2:  # jax random key
-      np.random.seed(seed_or_key[0])
-    else:
-      raise ValueError(f"seed_or_key should be an integer or a tuple of two integers.")
+    # step 1: set the seed of numpy random state
+    try:
+      if np.size(seed_or_key) == 1:  # seed
+        np.random.seed(seed_or_key)
+      elif np.size(seed_or_key) == 2:  # jax random key
+        np.random.seed(seed_or_key[0])
+      else:
+        raise ValueError(f"seed_or_key should be an integer or a tuple of two integers.")
+    except jax.errors.TracerArrayConversionError:
+      pass
+
+    # step 2: set the seed of jax random state
     DEFAULT.seed(seed_or_key)
     yield
   finally:
+    # restore the random state
     np.random.set_state(old_np_state)
     DEFAULT.seed(old_jrand_key)
 
@@ -1260,6 +1274,9 @@ def rand(*dn, key: Optional[SeedOrKey] = None, dtype: DTypeLike = None):
   dtype : dtype, optional
       Desired dtype of the result. Byteorder must be native.
       The default value is float.
+  key : PRNGKey, optional
+      The key for the random number generator. If not given, the
+      default random number generator is used.
 
   Returns
   -------
@@ -1272,7 +1289,8 @@ def rand(*dn, key: Optional[SeedOrKey] = None, dtype: DTypeLike = None):
 
   Examples
   --------
-  >>> brainstate.random.rand(3,2)
+  >>> import brainstate as bst
+  >>> bst.random.rand(3,2)
   array([[ 0.14022471,  0.96360618],  #random
          [ 0.37601032,  0.25528411],  #random
          [ 0.49313049,  0.94909878]]) #random

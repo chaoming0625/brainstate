@@ -56,13 +56,13 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from . import environ
-from ._state import State, StateDictManager, visible_state_dict
-from ._utils import set_module_as
-from .mixin import Mixin, Mode, DelayedInit, JointTypes, Batching, UpdateReturn
-from .transform import jit_error_if
-from .typing import Size, ArrayLike, PyTree
-from .util import unique_name, DictManager, get_unique_name
+from brainstate import environ
+from brainstate._state import State, StateDictManager, visible_state_dict
+from brainstate._utils import set_module_as
+from brainstate.mixin import Mixin, Mode, DelayedInit, JointTypes, Batching, UpdateReturn
+from brainstate.transform import jit_error_if
+from brainstate.typing import Size, ArrayLike, PyTree
+from brainstate.util import unique_name, DictManager, get_unique_name
 
 
 delay_identifier = '_*_delay_of_'
@@ -288,6 +288,23 @@ class Module(object):
     unexpected_keys = list(keys1 - keys2)
     missing_keys = list(keys2 - keys1)
     return unexpected_keys, missing_keys
+
+  def __treescope_repr__(self, path, subtree_renderer):
+    import treescope  # type: ignore[import-not-found,import-untyped]
+    children = {}
+    for name, value in vars(self).items():
+      if name.startswith('_'):
+        continue
+      children[name] = value
+    return treescope.repr_lib.render_object_constructor(
+        object_type=type(self),
+        attributes=children,
+        path=path,
+        subtree_renderer=subtree_renderer,
+        color=treescope.formatting_util.color_from_string(
+            type(self).__qualname__
+        )
+    )
 
 
 def _find_nodes(self, method: str = 'absolute', level=-1, include_self=True, _lid=0, _edges=None) -> DictManager:

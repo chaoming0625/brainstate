@@ -19,7 +19,7 @@ import brainunit as bu
 import jax
 import jax.random as jr
 
-from .typing import ArrayLike, Size, DTypeLike
+from brainstate.typing import ArrayLike, Size, DTypeLike
 
 
 def uniform_for_unit(
