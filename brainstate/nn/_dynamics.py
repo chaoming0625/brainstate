@@ -24,11 +24,11 @@ import jax.numpy as jnp
 
 from ._base import ExplicitInOutSize
 from ._misc import exp_euler_step
-from .. import environ, init, surrogate
-from .._module import Dynamics
-from .._state import ShortTermState
-from ..mixin import DelayedInit, Mode, AlignPost
-from ..typing import DTypeLike, ArrayLike, Size
+from brainstate import environ, init, surrogate
+from brainstate._module import Dynamics
+from brainstate._state import ShortTermState
+from brainstate.mixin import DelayedInit, Mode, AlignPost
+from brainstate.typing import DTypeLike, ArrayLike, Size
 
 __all__ = [
   # neuron models

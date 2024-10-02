@@ -25,10 +25,10 @@ import jax
 import jax.numpy as jnp
 
 from ._base import DnnLayer
-from .. import init, functional
-from .._state import ParamState
-from ..mixin import Mode
-from ..typing import ArrayLike
+from brainstate import init, functional
+from brainstate._state import ParamState
+from brainstate.mixin import Mode
+from brainstate.typing import ArrayLike
 
 T = TypeVar('T')
 

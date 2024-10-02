@@ -23,7 +23,7 @@ import jax.numpy as jnp
 
 from .._module import Module
 from ..mixin import DelayedInit, BindCondData
-from ..typing import ArrayLike
+from brainstate.typing import ArrayLike
 
 __all__ = [
   'SynOut', 'COBA', 'CUBA', 'MgBlock',

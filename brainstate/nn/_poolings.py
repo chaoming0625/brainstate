@@ -29,7 +29,7 @@ import numpy as np
 from ._base import DnnLayer, ExplicitInOutSize
 from .. import environ
 from ..mixin import Mode
-from ..typing import Size
+from brainstate.typing import Size
 
 __all__ = [
   'Flatten', 'Unflatten',

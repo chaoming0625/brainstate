@@ -24,11 +24,11 @@ import jax.numpy as jnp
 import jax.typing
 
 from ._base import ElementWiseBlock
-from .. import environ, random, functional as F
-from .._module import Module
-from .._state import ParamState
-from ..mixin import Mode
-from ..typing import ArrayLike
+from brainstate import environ, random, functional as F
+from brainstate._module import Module
+from brainstate._state import ParamState
+from brainstate.mixin import Mode
+from brainstate.typing import ArrayLike
 
 __all__ = [
   # activation functions

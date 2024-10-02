@@ -124,7 +124,8 @@ class Average(Metric):
 
 
 @partial(jax.tree_util.register_dataclass,
-         data_fields=['mean', 'standard_error_of_mean', 'standard_deviation'])
+         data_fields=['mean', 'standard_error_of_mean', 'standard_deviation'],
+         meta_fields=[])
 @dataclass
 class Statistics:
   mean: jnp.float32

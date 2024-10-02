@@ -17,9 +17,9 @@ from typing import Optional, Callable, Union
 
 from ._base import DnnLayer
 from .. import init
-from .._state import ParamState
-from ..mixin import Mode, Training
-from ..typing import ArrayLike
+from brainstate._state import ParamState
+from brainstate.mixin import Mode, Training
+from brainstate.typing import ArrayLike
 
 __all__ = [
   'Embedding',

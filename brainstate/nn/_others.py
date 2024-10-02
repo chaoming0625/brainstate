@@ -23,8 +23,8 @@ import brainunit as bu
 import jax.numpy as jnp
 
 from ._base import DnnLayer
-from .. import random, environ, typing, init
-from ..mixin import Mode
+from brainstate.mixin import Mode
+from brainstate import random, environ, typing, init
 
 __all__ = [
   'DropoutFixed',
