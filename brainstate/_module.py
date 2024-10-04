@@ -64,7 +64,6 @@ from brainstate.transform import jit_error_if
 from brainstate.typing import Size, ArrayLike, PyTree
 from brainstate.util import unique_name, DictManager, get_unique_name
 
-
 delay_identifier = '_*_delay_of_'
 _DELAY_ROTATE = 'rotation'
 _DELAY_CONCAT = 'concat'
@@ -94,7 +93,7 @@ __all__ = [
 ]
 
 
-class Module(object):
+class Object:
   """
   The Module class for the whole ecosystem.
 
@@ -118,42 +117,8 @@ class Module(object):
   # the excluded nodes
   _invisible_nodes: Tuple[str, ...] = ()
 
-  # # the supported computing modes
-  # supported_modes: Optional[Sequence[Mode]] = None
-
-  def __init__(self, name: str = None, mode: Mode = None):
-    super().__init__()
-
-    # check whether the object has a unique name.
-    self._name = unique_name(self=self, name=name)
-
-    # mode setting
-    self._mode = None
-    self.mode = mode if mode is not None else environ.get('mode')
-
   def __repr__(self):
     return f'{self.__class__.__name__}'
-
-  @property
-  def name(self):
-    """Name of the model."""
-    return self._name
-
-  @name.setter
-  def name(self, name: str = None):
-    raise AttributeError('The name of the model is read-only.')
-
-  @property
-  def mode(self):
-    """Mode of the model, which is useful to control the multiple behaviors of the model."""
-    return self._mode
-
-  @mode.setter
-  def mode(self, value):
-    if not isinstance(value, Mode):
-      raise ValueError(f'Must be instance of {Mode.__name__}, '
-                       f'but we got {type(value)}: {value}')
-    self._mode = value
 
   def states(
       self,
@@ -238,30 +203,6 @@ class Module(object):
       nodes = nodes.unique()
     return nodes
 
-  def update(self, *args, **kwargs):
-    """
-    The function to specify the updating rule.
-    """
-    raise NotImplementedError(f'Subclass of {self.__class__.__name__} must '
-                              f'implement "update" function.')
-
-  def __call__(self, *args, **kwargs):
-    return self.update(*args, **kwargs)
-
-  def __rrshift__(self, other):
-    """
-    Support using right shift operator to call modules.
-
-    Examples
-    --------
-
-    >>> import brainstate as bst
-    >>> x = bst.random.rand((10, 10))
-    >>> l = bst.nn.Activation(jax.numpy.tanh)
-    >>> y = x >> l
-    """
-    return self.__call__(other)
-
   def init_state(self, *args, **kwargs):
     """
     State initialization function.
@@ -297,13 +238,13 @@ class Module(object):
         continue
       children[name] = value
     return treescope.repr_lib.render_object_constructor(
-        object_type=type(self),
-        attributes=children,
-        path=path,
-        subtree_renderer=subtree_renderer,
-        color=treescope.formatting_util.color_from_string(
-            type(self).__qualname__
-        )
+      object_type=type(self),
+      attributes=children,
+      path=path,
+      subtree_renderer=subtree_renderer,
+      color=treescope.formatting_util.color_from_string(
+        type(self).__qualname__
+      )
     )
 
 
@@ -389,6 +330,83 @@ def _add_node_relative(self, k, v, _paths, gather, nodes):
     _paths.add(path)
     gather[k] = v
     nodes.append((k, v))
+
+
+class Module(Object):
+  """
+  The Module class for the whole ecosystem.
+
+  The ``Module`` is the base class for all the objects in the ecosystem. It
+  provides the basic functionalities for the objects, including:
+
+  - ``states()``: Collect all states in this node and the children nodes.
+  - ``nodes()``: Collect all children nodes.
+  - ``update()``: The function to specify the updating rule.
+  - ``init_state()``: State initialization function.
+  - ``save_state()``: Save states as a dictionary.
+  - ``load_state()``: Load states from the external objects.
+
+  """
+
+  __module__ = 'brainstate'
+
+  def __init__(self, name: str = None, mode: Mode = None):
+    super().__init__()
+
+    # check whether the object has a unique name.
+    self._name = unique_name(self=self, name=name)
+
+    # mode setting
+    self._mode = None
+    self.mode = mode if mode is not None else environ.get('mode')
+
+  def __repr__(self):
+    return f'{self.__class__.__name__}'
+
+  @property
+  def name(self):
+    """Name of the model."""
+    return self._name
+
+  @name.setter
+  def name(self, name: str = None):
+    raise AttributeError('The name of the model is read-only.')
+
+  @property
+  def mode(self):
+    """Mode of the model, which is useful to control the multiple behaviors of the model."""
+    return self._mode
+
+  @mode.setter
+  def mode(self, value):
+    if not isinstance(value, Mode):
+      raise ValueError(f'Must be instance of {Mode.__name__}, '
+                       f'but we got {type(value)}: {value}')
+    self._mode = value
+
+  def update(self, *args, **kwargs):
+    """
+    The function to specify the updating rule.
+    """
+    raise NotImplementedError(f'Subclass of {self.__class__.__name__} must '
+                              f'implement "update" function.')
+
+  def __call__(self, *args, **kwargs):
+    return self.update(*args, **kwargs)
+
+  def __rrshift__(self, other):
+    """
+    Support using right shift operator to call modules.
+
+    Examples
+    --------
+
+    >>> import brainstate as bst
+    >>> x = bst.random.rand((10, 10))
+    >>> l = bst.nn.Dropout(0.5)
+    >>> y = x >> l
+    """
+    return self.__call__(other)
 
 
 class Projection(Module):
