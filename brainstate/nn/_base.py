@@ -20,8 +20,8 @@ from __future__ import annotations
 import inspect
 from typing import Sequence, Optional, Tuple, Union
 
-from .._module import Module, UpdateReturn, Container, visible_module_dict
-from ..mixin import Mixin, DelayedInitializer, DelayedInit
+from brainstate._module import Module, UpdateReturn, Container, visible_module_dict
+from brainstate.mixin import Mixin, DelayedInitializer, DelayedInit
 
 __all__ = [
   'ExplicitInOutSize',

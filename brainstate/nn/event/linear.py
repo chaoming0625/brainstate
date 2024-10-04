@@ -20,10 +20,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from brainstate._module import Module
 from brainstate._state import ParamState, State
 from brainstate.init import param
 from brainstate.mixin import Mode, Training
+from brainstate.nn._base import DnnLayer
 from brainstate.typing import ArrayLike
 from ._misc import IntScalar
 
@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-class EventDense(Module):
+class EventDense(DnnLayer):
   """
   The EventFixedProb module implements a fixed probability connection with CSR sparse data structure.
 
@@ -62,6 +62,8 @@ class EventDense(Module):
     super().__init__(name=name, mode=mode)
     self.n_pre = n_pre
     self.n_post = n_post
+    self.in_size = n_pre
+    self.out_size = n_post
 
     assert grad_mode in ['vjp', 'jvp'], f"Unsupported grad_mode: {grad_mode}"
     self.grad_mode = grad_mode

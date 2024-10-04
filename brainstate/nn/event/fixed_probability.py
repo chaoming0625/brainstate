@@ -20,10 +20,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from brainstate._module import Module
 from brainstate._state import ParamState, State
 from brainstate.init import param
 from brainstate.mixin import Mode, Training
+from brainstate.nn._base import DnnLayer
 from brainstate.random import RandomState
 from brainstate.transform import for_loop
 from brainstate.typing import ArrayLike
@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-class EventFixedProb(Module):
+class EventFixedProb(DnnLayer):
   """
   The EventFixedProb module implements a fixed probability connection with CSR sparse data structure.
 
@@ -74,6 +74,9 @@ class EventFixedProb(Module):
     super().__init__(name=name, mode=mode)
     self.n_pre = n_pre
     self.n_post = n_post
+    self.in_size = n_pre
+    self.out_size = n_post
+
     self.n_conn = int(n_post * prob)
     if self.n_conn < 1:
       raise ValueError(f"The number of connections must be at least 1. Got: int({n_post} * {prob}) = {self.n_conn}")
@@ -165,9 +168,9 @@ def cpu_event_fixed_prob(
   return u.maybe_decimal(u.Quantity(post_data, unit=unit))
 
 
-# --------------
-# Implementation
-# --------------
+# -------------------
+# CPU Implementation
+# -------------------
 
 
 def _cpu_event_fixed_prob_mv(indices, g_max, spk, n_post: int) -> jax.Array:

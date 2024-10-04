@@ -20,10 +20,10 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 
-from brainstate._module import Module
 from brainstate._state import ParamState, State
 from brainstate.init import param
 from brainstate.mixin import Mode, Training
+from brainstate.nn._base import DnnLayer
 from brainstate.typing import ArrayLike
 from ._misc import IntScalar
 
@@ -32,7 +32,7 @@ __all__ = [
 ]
 
 
-class EventCSR(Module):
+class EventCSR(DnnLayer):
   """
   The EventCSR module implements a fixed probability connection with CSR sparse data structure.
 
@@ -62,6 +62,9 @@ class EventCSR(Module):
       grad_mode: str = 'vjp'
   ):
     super().__init__(name=name, mode=mode)
+
+    self.in_size = n_pre
+    self.out_size = n_post
     self.n_pre = n_pre
     self.n_post = n_post
 
