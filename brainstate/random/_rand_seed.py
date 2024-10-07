@@ -29,11 +29,17 @@ __all__ = [
 def split_key():
   """Create a new seed from the current seed.
 
-  This function is useful for the consistency with JAX's random paradigm."""
+  This function is useful for the consistency with JAX's random paradigm.
+
+  Returns
+  -------
+  key : jax.random.PRNGKey
+    A new random key.
+  """
   return DEFAULT.split_key()
 
 
-def split_keys(n):
+def split_keys(n: int):
   """Create multiple seeds from the current seed. This is used
   internally by `pmap` and `vmap` to ensure that random numbers
   are different in parallel threads.
@@ -42,6 +48,11 @@ def split_keys(n):
   ----------
   n : int
     The number of seeds to generate.
+
+  Returns
+  -------
+  keys : jax.random.PRNGKey
+    A tuple of JAX random keys.
   """
   return DEFAULT.split_keys(n)
 
@@ -62,19 +73,18 @@ def clone_rng(seed_or_key=None, clone: bool = True) -> RandomState:
     return RandomState(seed_or_key)
 
 
-def default_rng(seed_or_key=None, clone: bool = True) -> RandomState:
+def default_rng(seed_or_key=None) -> RandomState:
   """
   Get the default random state.
 
   Args:
     seed_or_key: The seed (an integer) or the jax random key.
-    clone: Bool. Whether clone the default random state.
 
   Returns:
     The random state.
   """
   if seed_or_key is None:
-    return DEFAULT.clone() if clone else DEFAULT
+    return DEFAULT
   else:
     return RandomState(seed_or_key)
 

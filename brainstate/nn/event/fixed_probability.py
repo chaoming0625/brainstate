@@ -254,3 +254,23 @@ def _cpu_event_fixed_prob_mv_jvp_rule(indices, n_post, primals, tangents):
 
 _cpu_event_fixed_prob_mv_jvp = jax.custom_jvp(_cpu_event_fixed_prob_mv, nondiff_argnums=(0, 3))
 _cpu_event_fixed_prob_mv_jvp.defjvp(_cpu_event_fixed_prob_mv_jvp_rule)
+
+
+
+
+
+
+def _gpu_event_fixed_prob_mv(indices, g_max, spk, n_post: int) -> jax.Array:
+  def scan_fn(post, i):
+    w = g_max if jnp.size(g_max) == 1 else g_max[i]
+    ids = indices[i]
+    sp = spk[i]
+    if spk.dtype == jnp.bool_:
+      post = jax.lax.cond(sp, lambda: post.at[ids].add(w), lambda: post)
+    else:
+      post = jax.lax.cond(sp == 0., lambda: post, lambda: post.at[ids].add(w * sp))
+    return post, None
+
+  return jax.lax.scan(scan_fn, jnp.zeros((n_post,), dtype=g_max.dtype), np.arange(len(spk)))[0]
+
+

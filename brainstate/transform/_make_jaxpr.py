@@ -727,7 +727,7 @@ def _make_jaxpr(
     closed_jaxpr = jax.core.ClosedJaxpr(jaxpr, consts)
     if return_shape:
       out_avals, _ = jax.util.unzip2(out_type)
-      out_shapes_flat = [jax.ShapeDtypeStruct(a.shape, a.dtype, a.named_shape) for a in out_avals]
+      out_shapes_flat = [jax.ShapeDtypeStruct(a.shape, a.dtype) for a in out_avals]
       return closed_jaxpr, jax.tree.unflatten(out_tree(), out_shapes_flat)
     return closed_jaxpr
 
