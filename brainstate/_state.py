@@ -22,8 +22,8 @@ import numpy as np
 from jax.api_util import shaped_abstractify
 from jax.extend import source_info_util
 
-from .typing import ArrayLike, PyTree
-from .util import DictManager
+from brainstate.typing import ArrayLike, PyTree
+from brainstate.util import DictManager
 
 __all__ = [
   'State', 'ShortTermState', 'LongTermState', 'ParamState',

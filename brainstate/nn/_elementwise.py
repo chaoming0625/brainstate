@@ -19,16 +19,16 @@ from __future__ import annotations
 
 from typing import Optional
 
-import brainunit as bu
+import brainunit as u
 import jax.numpy as jnp
 import jax.typing
 
 from ._base import ElementWiseBlock
-from .. import environ, random, functional as F
-from .._module import Module
-from .._state import ParamState
-from ..mixin import Mode
-from ..typing import ArrayLike
+from brainstate import environ, random, functional as F
+from brainstate._module import Module
+from brainstate._state import ParamState
+from brainstate.mixin import Mode
+from brainstate.typing import ArrayLike
 
 __all__ = [
   # activation functions
@@ -83,7 +83,7 @@ class Threshold(Module, ElementWiseBlock):
     self.value = value
 
   def __call__(self, x: ArrayLike) -> ArrayLike:
-    dtype = bu.math.get_dtype(x)
+    dtype = u.math.get_dtype(x)
     return jnp.where(x > jnp.asarray(self.threshold, dtype=dtype),
                      x,
                      jnp.asarray(self.value, dtype=dtype))
@@ -1143,7 +1143,7 @@ class Dropout(Module, ElementWiseBlock):
     self.prob = prob
 
   def __call__(self, x):
-    dtype = bu.math.get_dtype(x)
+    dtype = u.math.get_dtype(x)
     fit_phase = environ.get('fit', desc='Whether this is a fitting process. Bool.')
     if fit_phase and self.prob < 1.:
       keep_mask = random.bernoulli(self.prob, x.shape)
@@ -1173,7 +1173,7 @@ class _DropoutNd(Module, ElementWiseBlock):
     self.channel_axis = channel_axis
 
   def __call__(self, x):
-    dtype = bu.math.get_dtype(x)
+    dtype = u.math.get_dtype(x)
     # get fit phase
     fit_phase = environ.get('fit', desc='Whether this is a fitting process. Bool.')
 

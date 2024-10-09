@@ -21,7 +21,7 @@ import functools
 from typing import Sequence, Optional
 from typing import Union, Tuple, Callable, List
 
-import brainunit as bu
+import brainunit as u
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -29,7 +29,7 @@ import numpy as np
 from ._base import DnnLayer, ExplicitInOutSize
 from .. import environ
 from ..mixin import Mode
-from ..typing import Size
+from brainstate.typing import Size
 
 __all__ = [
   'Flatten', 'Unflatten',
@@ -85,7 +85,7 @@ class Flatten(DnnLayer, ExplicitInOutSize):
 
     if in_size is not None:
       self.in_size = tuple(in_size)
-      y = jax.eval_shape(functools.partial(bu.math.flatten, start_axis=start_axis, end_axis=end_axis),
+      y = jax.eval_shape(functools.partial(u.math.flatten, start_axis=start_axis, end_axis=end_axis),
                          jax.ShapeDtypeStruct(self.in_size, environ.dftype()))
       self.out_size = y.shape
 
@@ -101,7 +101,7 @@ class Flatten(DnnLayer, ExplicitInOutSize):
         start_axis = self.start_axis + dim_diff
       else:
         start_axis = x.ndim + self.start_axis
-    return bu.math.flatten(x, start_axis, self.end_axis)
+    return u.math.flatten(x, start_axis, self.end_axis)
 
   def __repr__(self) -> str:
     return f'{self.__class__.__name__}(start_axis={self.start_axis}, end_axis={self.end_axis})'
@@ -153,12 +153,12 @@ class Unflatten(DnnLayer, ExplicitInOutSize):
 
     if in_size is not None:
       self.in_size = tuple(in_size)
-      y = jax.eval_shape(functools.partial(bu.math.unflatten, axis=axis, sizes=sizes),
+      y = jax.eval_shape(functools.partial(u.math.unflatten, axis=axis, sizes=sizes),
                          jax.ShapeDtypeStruct(self.in_size, environ.dftype()))
       self.out_size = y.shape
 
   def update(self, x):
-    return bu.math.unflatten(x, self.axis, self.sizes)
+    return u.math.unflatten(x, self.axis, self.sizes)
 
   def __repr__(self):
     return f'{self.__class__.__name__}(axis={self.axis}, sizes={self.sizes})'

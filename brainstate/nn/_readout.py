@@ -29,7 +29,7 @@ from ._misc import exp_euler_step
 from .. import environ, init, surrogate
 from .._state import ShortTermState, ParamState
 from ..mixin import Mode
-from ..typing import Size, ArrayLike, DTypeLike
+from brainstate.typing import Size, ArrayLike, DTypeLike
 
 __all__ = [
   'LeakyRateReadout',

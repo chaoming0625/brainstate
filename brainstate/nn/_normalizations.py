@@ -25,9 +25,9 @@ import jax.numpy as jnp
 
 from ._base import DnnLayer
 from .. import environ, init
-from .._state import LongTermState, ParamState
-from ..mixin import Mode
-from ..typing import DTypeLike, ArrayLike, Size, Axes
+from brainstate._state import LongTermState, ParamState
+from brainstate.mixin import Mode
+from brainstate.typing import DTypeLike, ArrayLike, Size, Axes
 
 __all__ = [
   'BatchNorm1d', 'BatchNorm2d', 'BatchNorm3d',

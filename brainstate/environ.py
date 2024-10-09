@@ -16,12 +16,14 @@ from .mixin import Mode
 from .util import MemScaling, IdMemScaling
 
 __all__ = [
-  'set', 'context', 'get', 'all',
-  'set_host_device_count', 'set_platform',
-  'get_host_device_count', 'get_platform',
-  'get_dt', 'get_mode', 'get_mem_scaling', 'get_precision',
-  'tolerance', 'register_default_behavior',
+  # functions for environment settings
+  'set', 'context', 'get', 'all', 'set_host_device_count', 'set_platform',
+  # functions for getting default behaviors
+  'get_host_device_count', 'get_platform', 'get_dt', 'get_mode', 'get_mem_scaling', 'get_precision',
+  # functions for default data types
   'dftype', 'ditype', 'dutype', 'dctype',
+  # others
+  'tolerance', 'register_default_behavior',
 ]
 
 # Default, there are several shared arguments in the global context.
@@ -57,8 +59,9 @@ def context(**kwargs):
 
   """
   if 'platform' in kwargs:
-    raise ValueError('Cannot set platform in environment context. '
-                     'Please use set_platform() or set() for the global setting.')
+    raise ValueError('\n'
+                     'Cannot set platform in "context" environment. \n'
+                     'You should set platform in the global environment by "set_platform()" or "set()".')
   if 'host_device_count' in kwargs:
     raise ValueError('Cannot set host_device_count in environment context. '
                      'Please use set_host_device_count() or set() for the global setting.')
@@ -135,6 +138,11 @@ def get(key: str, default: Any = _NOT_PROVIDE, desc: str = None):
 def all() -> dict:
   """
   Get all the current default computation environment.
+
+  Returns
+  -------
+  r: dict
+    The current default computation environment.
   """
   r = dict()
   for k, v in _environment_contexts.items():
@@ -227,6 +235,8 @@ def set(
   """
   Set the global default computation environment.
 
+
+
   Args:
     platform: str. The computing platform. Either 'cpu', 'gpu' or 'tpu'.
     host_device_count: int. The number of host devices.
@@ -290,6 +300,12 @@ def set_platform(platform: str):
   """
   Changes platform to CPU, GPU, or TPU. This utility only takes
   effect at the beginning of your program.
+
+  Args:
+    platform: str. The computing platform. Either 'cpu', 'gpu' or 'tpu'.
+
+  Raises:
+    ValueError: If the platform is not in ['cpu', 'gpu', 'tpu'].
   """
   assert platform in ['cpu', 'gpu', 'tpu']
   config.update("jax_platform_name", platform)
@@ -369,6 +385,23 @@ def _get_complex(precision: int):
 def dftype() -> DTypeLike:
   """
   Default floating data type.
+
+  This function returns the default floating data type based on the current precision.
+  If you want the data dtype is changed with the setting of the precision by ``brainstate.environ.set(precision)``,
+  you can use this function to get the default floating data type, and create the data by using ``dtype=dftype()``.
+
+  For example, if the precision is set to 32, the default floating data type is ``np.float32``.
+
+  >>> import brainstate as bst
+  >>> import numpy as np
+  >>> with bst.environ.context(precision=32):
+  ...    a = np.zeros(1, dtype=bst.environ.dftype())
+  >>> print(a.dtype)
+
+  Returns
+  -------
+  float_dtype: DTypeLike
+    The default floating data type.
   """
   return _get_float(get_precision())
 
@@ -376,6 +409,24 @@ def dftype() -> DTypeLike:
 def ditype() -> DTypeLike:
   """
   Default integer data type.
+
+  This function returns the default integer data type based on the current precision.
+  If you want the data dtype is changed with the setting of the precision by ``brainstate.environ.set(precision)``,
+  you can use this function to get the default integer data type, and create the data by using ``dtype=ditype()``.
+
+  For example, if the precision is set to 32, the default integer data type is ``np.int32``.
+
+  >>> import brainstate as bst
+  >>> import numpy as np
+  >>> with bst.environ.context(precision=32):
+  ...    a = np.zeros(1, dtype=bst.environ.ditype())
+  >>> print(a.dtype)
+  int32
+
+  Returns
+  -------
+  int_dtype: DTypeLike
+    The default integer data type.
   """
   return _get_int(get_precision())
 
@@ -383,6 +434,25 @@ def ditype() -> DTypeLike:
 def dutype() -> DTypeLike:
   """
   Default unsigned integer data type.
+
+  This function returns the default unsigned integer data type based on the current precision.
+  If you want the data dtype is changed with the setting of the precision
+  by ``brainstate.environ.set(precision)``, you can use this function to get the default
+  unsigned integer data type, and create the data by using ``dtype=dutype()``.
+
+  For example, if the precision is set to 32, the default unsigned integer data type is ``np.uint32``.
+
+  >>> import brainstate as bst
+  >>> import numpy as np
+  >>> with bst.environ.context(precision=32):
+  ...   a = np.zeros(1, dtype=bst.environ.dutype())
+  >>> print(a.dtype)
+  uint32
+
+  Returns
+  -------
+  uint_dtype: DTypeLike
+    The default unsigned integer data type.
   """
   return _get_uint(get_precision())
 
@@ -390,6 +460,24 @@ def dutype() -> DTypeLike:
 def dctype() -> DTypeLike:
   """
   Default complex data type.
+
+  This function returns the default complex data type based on the current precision.
+  If you want the data dtype is changed with the setting of the precision by ``brainstate.environ.set(precision)``,
+  you can use this function to get the default complex data type, and create the data by using ``dtype=dctype()``.
+
+  For example, if the precision is set to 32, the default complex data type is ``np.complex64``.
+
+  >>> import brainstate as bst
+  >>> import numpy as np
+  >>> with bst.environ.context(precision=32):
+  ...    a = np.zeros(1, dtype=bst.environ.dctype())
+  >>> print(a.dtype)
+  complex64
+
+  Returns
+  -------
+  complex_dtype: DTypeLike
+    The default complex data type.
   """
   return _get_complex(get_precision())
 
@@ -405,7 +493,27 @@ def tolerance():
 
 def register_default_behavior(key: str, behavior: Callable, replace_if_exist: bool = False):
   """
-  Register a default behavior for a specific key.
+  Register a default behavior for a specific global key parameter.
+
+  For example, you can register a default behavior for the key 'dt' by::
+
+  >>> import brainstate as bst
+  >>> def dt_behavior(dt):
+  ...     print(f'Set the default dt to {dt}.')
+  ...
+  >>> bst.environ.register_default_behavior('dt', dt_behavior)
+
+  Then, when you set the default dt by `brainstate.environ.set(dt=0.1)`, the behavior
+  `dt_behavior` will be called with
+  `dt_behavior(0.1)`.
+
+  >>> bst.environ.set(dt=0.1)
+  Set the default dt to 0.1.
+  >>> with bst.environ.context(dt=0.2):
+  ...     pass
+  Set the default dt to 0.2.
+  Set the default dt to 0.1.
+
 
   Args:
     key: str. The key to register.
@@ -421,4 +529,3 @@ def register_default_behavior(key: str, behavior: Callable, replace_if_exist: bo
 
 
 set(dt=0.1, precision=32, mode=Mode(), mem_scaling=IdMemScaling())
-

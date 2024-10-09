@@ -16,7 +16,7 @@
 # -*- coding: utf-8 -*-
 
 
-import brainunit as bu
+import brainunit as u
 
 from brainstate import environ
 from ._base import Initializer, to_size
@@ -40,7 +40,7 @@ class ZeroInit(Initializer):
 
   def __call__(self, shape):
     shape = to_size(shape)
-    return bu.math.zeros(shape, dtype=self.dtype)
+    return u.math.zeros(shape, dtype=self.dtype)
 
   def __repr__(self):
     return f"{self.__class__.__name__}(dtype={self.dtype})"
@@ -60,11 +60,11 @@ class Constant(Initializer):
   def __init__(self, value=1., dtype=None):
     super(Constant, self).__init__()
     self.dtype = dtype or environ.dftype()
-    self.value = bu.math.asarray(value, dtype=self.dtype)
+    self.value = value
 
   def __call__(self, shape):
     shape = to_size(shape)
-    return bu.math.full(shape, self.value, dtype=self.dtype)
+    return u.math.full(shape, self.value, dtype=self.dtype)
 
   def __repr__(self):
     return f'{self.__class__.__name__}(value={self.value}, dtype={self.dtype})'
@@ -95,15 +95,15 @@ class Identity(Initializer):
   def __init__(self, value=1., dtype=None):
     super(Identity, self).__init__()
     self.dtype = dtype or environ.dftype()
-    self.value = bu.math.asarray(value, dtype=self.dtype)
+    self.value = value
 
   def __call__(self, shape):
     shape = to_size(shape)
     if isinstance(shape, (tuple, list)):
       if len(shape) > 2:
         raise ValueError(f'Only support initialize 2D weights for {self.__class__.__name__}.')
-    r = bu.math.eye(shape, dtype=self.dtype)
-    r = bu.math.fill_diagonal(r, self.value)
+    r = u.math.eye(shape, dtype=self.dtype)
+    r = u.math.fill_diagonal(r, self.value)
     return r
 
   def __repr__(self):

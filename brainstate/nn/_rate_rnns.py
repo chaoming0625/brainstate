@@ -27,7 +27,7 @@ from .. import random, init, functional
 from .._module import Module
 from .._state import ShortTermState, ParamState
 from ..mixin import DelayedInit, Mode
-from ..typing import ArrayLike
+from brainstate.typing import ArrayLike
 
 __all__ = [
   'RNNCell', 'ValinaRNNCell', 'GRUCell', 'MGUCell', 'LSTMCell', 'URLSTMCell',

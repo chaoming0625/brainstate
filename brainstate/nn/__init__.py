@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
+from . import metrics
 from ._base import *
 from ._base import __all__ as base_all
 from ._connections import *
@@ -39,6 +40,8 @@ from ._readout import *
 from ._readout import __all__ as readout_all
 from ._synouts import *
 from ._synouts import __all__ as synouts_all
+from .event import *
+from .event import __all__ as event_all
 
 __all__ = (
     base_all +
@@ -53,7 +56,8 @@ __all__ = (
     readout_all +
     synouts_all +
     _projection_all +
-    _misc_all
+    _misc_all +
+    event_all
 )
 
 del (
@@ -68,5 +72,6 @@ del (
   readout_all,
   synouts_all,
   _projection_all,
-  _misc_all
+  _misc_all,
+  event_all
 )

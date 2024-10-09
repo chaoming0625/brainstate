@@ -30,6 +30,8 @@ from . import surrogate
 from . import transform
 from . import typing
 from . import util
+from ._visualization import *
+from ._visualization import __all__ as _visualization_all
 from ._module import *
 from ._module import __all__ as _module_all
 from ._state import *
@@ -39,6 +41,6 @@ __all__ = (
     ['environ', 'share', 'nn', 'optim', 'random',
      'surrogate', 'functional', 'init',
      'mixin', 'transform', 'util', 'typing'] +
-    _module_all + _state_all
+    _module_all + _state_all + _visualization_all
 )
-del _module_all, _state_all
+del _module_all, _state_all, _visualization_all

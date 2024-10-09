@@ -18,7 +18,7 @@
 from typing import Sequence, Optional, TypeVar
 from typing import (_SpecialForm, _type_check, _remove_dups_flatten, _UnionGenericAlias)
 
-from .typing import PyTree
+from brainstate.typing import PyTree
 
 T = TypeVar('T')
 State = None

@@ -1,4 +1,4 @@
-# Copyright 2024 BDP Ecosystem Limited. All Rights Reserved.
+# Copyright 2024 The Flax Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,16 +11,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# ==============================================================================
 
-
-from ._lr_scheduler import *
-from ._lr_scheduler import __all__ as scheduler_all
-from ._optax_optimizer import *
-from ._optax_optimizer import __all__ as optax_all
-from ._sgd_optimizer import *
-from ._sgd_optimizer import __all__ as optimizer_all
-
-__all__ = scheduler_all + optimizer_all + optax_all
-
-del optax_all, scheduler_all, optimizer_all
